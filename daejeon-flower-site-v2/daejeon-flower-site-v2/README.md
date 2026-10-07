@@ -41,3 +41,4 @@ GitHub 저장소 안에 이 폴더 자체를 넣으면 Vercel Root Directory를 
 - 카카오톡 상담 링크가 있다면 상담 버튼 연결
 - WEDDING / FLOWER CLASS 세부 주문 흐름
 - 개인정보처리방침의 실제 위탁업체 정보 확정
+v2 deployment
