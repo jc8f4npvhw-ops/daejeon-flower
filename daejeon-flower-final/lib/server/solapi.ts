@@ -36,7 +36,8 @@ export async function solapiRequest(env: Env, path: string, payload?: unknown) {
   const signature = await hmac(env.SOLAPI_API_SECRET!, date + salt);
   return fetch(apiOrigin + path, {
     method: payload === undefined ? 'GET' : 'POST',
-    redirect: 'error',
+    // Workers supports manual/follow only. Never forward credentials to a redirect target.
+    redirect: 'manual',
     signal: AbortSignal.timeout(15000),
     headers: {'Content-Type': 'application/json', Authorization: `HMAC-SHA256 apiKey=${env.SOLAPI_API_KEY}, date=${date}, salt=${salt}, signature=${signature}`},
     ...(payload === undefined ? {} : {body: JSON.stringify(payload)})

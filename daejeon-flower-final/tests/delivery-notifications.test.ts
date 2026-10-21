@@ -41,7 +41,7 @@ test('concurrent dispatch sends once with HMAC and approved variables; acceptanc
   let sends=0;const links:string[]=[];
   globalThis.fetch=async(input:any,init:any)=>{
    if(init.method==='GET')return new Response(JSON.stringify({count:{total:1,sentSuccess:1,sentFailed:0,sentPending:0}}));
-   sends++;assert.equal(String(input),'https://api.solapi.com/messages/v4/send-many/detail');assert.equal(init.redirect,'error');
+   sends++;assert.equal(String(input),'https://api.solapi.com/messages/v4/send-many/detail');assert.equal(init.redirect,'manual');
    const auth=Object.fromEntries(String(init.headers.Authorization).replace('HMAC-SHA256 ','').split(', ').map(x=>x.split('=')));
    assert.equal(auth.signature,await hmac(env.SOLAPI_API_SECRET,auth.date+auth.salt));assert.equal(auth.apiKey,env.SOLAPI_API_KEY);
    const payload=JSON.parse(init.body);assert.equal(payload.messages.length,1);const m=payload.messages[0];assert.equal(m.to,'01012345678');assert.equal(m.type,'ATA');assert.equal(m.kakaoOptions.disableSms,true);assert.equal(m.kakaoOptions.templateId,deliveryTemplate);assert.equal(m.kakaoOptions.pfId,deliveryChannel);

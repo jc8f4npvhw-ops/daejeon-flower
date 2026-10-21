@@ -10,6 +10,7 @@ test('connection check only reads balance and never exposes secrets or provider 
   globalThis.fetch = (async (url: any, init: any) => {
     calls.push(String(url));
     assert.equal(init.method, 'GET');
+    assert.equal(init.redirect, 'manual');
     assert.equal(init.body, undefined);
     return new Response('{"accountId":"private-account","balance":300}', {status});
   }) as typeof fetch;
