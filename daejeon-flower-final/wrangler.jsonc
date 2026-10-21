@@ -34,7 +34,7 @@
   ],
   "triggers": {"crons": ["*/5 * * * *"]},
   "vars": {
-    "KAKAO_SENDING_ENABLED": "false",
+    "KAKAO_SENDING_ENABLED": "true",
     "KAKAO_LIVE_SEND_ENABLED": "false",
     "SOLAPI_CHANNEL_ID": "KA01PF261020165851146fAw6zXfI0v7",
     "SOLAPI_DELIVERY_TEMPLATE_ID": "KA01TP2610201709032423Gh5ro5fvey",

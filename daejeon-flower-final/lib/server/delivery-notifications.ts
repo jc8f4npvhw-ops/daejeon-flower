@@ -1,7 +1,7 @@
 import { Env, assert, body, json, token } from './types';
 import { admin } from './auth';
 import { deliveryLink } from './delivery-access';
-import { deliveryPayload, sendingReady, solapiRequest, normalizePhone, deliveryChannel, deliveryTemplate, configuredOrigin } from './solapi';
+import { deliveryPayload, sendingReady, solapiRequest, normalizePhone, deliveryChannel, deliveryTemplate, configuredOrigin, checkSolapiConnection } from './solapi';
 
 // Called inside the same D1 batch as the order status update, before releasing its lock.
 export function deliveryEventStatement(env: Env, orderId: number, operation: string) {
@@ -79,6 +79,9 @@ export async function runDeliveryJobs(env: Env) {
 export async function deliveryNotificationsApi(req: Request, env: Env, path: string): Promise<Response | null> {
   if (!path.startsWith('/admin/delivery-notifications')) return null;
   const user = await admin(req, env, ['OWNER','MANAGER']);
+  if (path === '/admin/delivery-notifications/connection-check' && req.method === 'POST') {
+    return json(await checkSolapiConnection(env));
+  }
   if (path === '/admin/delivery-notifications' && req.method === 'GET') {
     const page = Math.max(1, Math.min(100000, Math.floor(Number(new URL(req.url).searchParams.get('page')) || 1)));
     const rows = await env.DB.prepare('SELECT n.id,n.status,n.attempts,n.failure_code,n.created_at,n.updated_at,n.sent_at,n.recipient_phone,o.order_no FROM delivery_notification_outbox n JOIN orders o ON o.id=n.order_id ORDER BY n.created_at DESC,n.id DESC LIMIT 25 OFFSET ?').bind((page-1)*25).all<any>();

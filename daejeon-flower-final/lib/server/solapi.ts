@@ -30,7 +30,7 @@ export function sendingReady(env: Env) {
 
 export async function solapiRequest(env: Env, path: string, payload?: unknown) {
   // Fixed API origin and generated paths only. Never accept a caller-supplied endpoint.
-  if (!/^\/messages\/v4\/(send-many\/detail|groups\/[A-Za-z0-9_-]+)$/.test(path)) throw Error('INVALID_PROVIDER_PATH');
+  if (!/^\/messages\/v4\/(send-many\/detail|groups\/[A-Za-z0-9_-]+)$/.test(path) && !(path === '/cash/v1/balance' && payload === undefined)) throw Error('INVALID_PROVIDER_PATH');
   const date = new Date().toISOString();
   const salt = crypto.randomUUID().replaceAll('-', '');
   const signature = await hmac(env.SOLAPI_API_SECRET!, date + salt);
@@ -41,6 +41,21 @@ export async function solapiRequest(env: Env, path: string, payload?: unknown) {
     headers: {'Content-Type': 'application/json', Authorization: `HMAC-SHA256 apiKey=${env.SOLAPI_API_KEY}, date=${date}, salt=${salt}, signature=${signature}`},
     ...(payload === undefined ? {} : {body: JSON.stringify(payload)})
   });
+}
+
+// Read-only authentication check. Never send a message or return provider bodies/secrets.
+export async function checkSolapiConnection(env: Env) {
+  const key = env.SOLAPI_API_KEY || '', secret = env.SOLAPI_API_SECRET || '';
+  if (!key || !secret) return {ok:false, code:'MISSING_CREDENTIALS'};
+  if (key !== key.trim() || secret !== secret.trim() || /[\r\n]/.test(key + secret)) return {ok:false, code:'CREDENTIAL_WHITESPACE'};
+  try {
+    const response = await solapiRequest(env, '/cash/v1/balance');
+    await response.body?.cancel();
+    return {ok:response.ok, code:response.ok ? 'CONNECTED' : `HTTP_${response.status}`};
+  } catch (error) {
+    const name = error instanceof Error ? error.name : '';
+    return {ok:false, code:name === 'TimeoutError' || name === 'AbortError' ? 'CONNECTION_TIMEOUT' : 'CONNECTION_EXCEPTION'};
+  }
 }
 
 export function deliveryPayload(env: Env, phone: string, orderNo: string, link: string, eventId: string) {
