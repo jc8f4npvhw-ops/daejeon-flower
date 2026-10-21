@@ -104,3 +104,4 @@ npx wrangler secret put TOSS_SECRET_KEY
 실제 Cloudflare 계정 배포, 원격 DB/R2 업로드, 관리자 최초 등록, 실 PG 승인/취소, 실제 기기의 화면 확인은 아직 실행하지 않았습니다. 그 전에는 운영 오픈 완료로 볼 수 없습니다. 쿠폰·회원/소셜 로그인·AI 게시물 발행은 실제 연결 전입니다. 배송완료 알림톡 코드는 2026-10-21 추가했지만 서버 설정·실제 발송 테스트는 남아 있습니다.
 
 공식 참고: https://github.com/cloudflare/vinext / https://vinext.dev/docs/deploying/cloudflare / https://docs.tosspayments.com/guides/v2/payment-widget/integration
+Cloudflare 배포 브랜치: cloudflare-latest
