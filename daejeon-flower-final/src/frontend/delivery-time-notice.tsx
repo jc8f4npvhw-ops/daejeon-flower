@@ -1,0 +1,2 @@
+import React from 'react';
+export function DeliveryTimeNotice({compact=false}:{compact?:boolean}){return <aside className={'delivery-time-notice'+(compact?' compact':'')} aria-label="배송 도착시간 안내"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg><div><b>배송은 요청하신 시간보다 약 30분 전후로 도착할 수 있어요.</b><p>교통·현장 상황을 고려해 여유 있게 시간을 선택해주세요. 꼭 도착해야 하는 시각이 있다면 주문 시 알려주세요.</p></div></aside>}

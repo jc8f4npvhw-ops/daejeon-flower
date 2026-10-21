@@ -1,0 +1,1 @@
+export const representatives = {"꽃다발": {"src": "/api/media/public/seed/3a80ed278e2d9d74973c5307.webp", "path": "KakaoTalk_20251216_202346030_07.jpg"}, "꽃바구니": {"src": "/api/media/public/seed/fde2ed8c28c8d046e0cb72e2.webp", "path": "KakaoTalk_20230912_160125176_03.jpg"}};

@@ -1,0 +1,2 @@
+import {randomBytes} from 'node:crypto';import {spawnSync} from 'node:child_process';
+const secret=randomBytes(48).toString('base64url');const r=spawnSync(process.platform==='win32'?'npx.cmd':'npx',['wrangler','secret','put','SESSION_SECRET'],{input:secret+'\n',stdio:['pipe','pipe','pipe']});if(r.status!==0){console.error('세션 보안키 설정에 실패했습니다. 로그인과 Worker 배포 상태를 확인해주세요.');process.exitCode=1}else console.log('관리자 세션 보안키를 설정했습니다. 값은 화면과 소스에 저장하지 않았습니다.');

@@ -1,0 +1,10 @@
+import React,{useEffect,useRef,useState} from 'react';
+import {reduceMotion} from './step-motion';
+export function PreservedIllustration(){return <img src="/api/media/public/seed/preserved-d-category-v2.png" alt="유리돔 속 보존 장미와 알파벳 D로 표현한 프리저브드 아이콘"/>}
+export function MainCategoryNav({items,onChoose}:any){
+ const ref=useRef<HTMLDivElement>(null);const [edges,setEdges]=useState({left:true,right:false});
+ const sync=()=>{const e=ref.current;if(e)setEdges({left:e.scrollLeft<=2,right:e.scrollLeft+e.clientWidth>=e.scrollWidth-2})};
+ useEffect(()=>{sync();const e=ref.current;if(!e)return;const observer=typeof ResizeObserver==='undefined'?null:new ResizeObserver(sync);observer?.observe(e);window.addEventListener('resize',sync);return()=>{observer?.disconnect();window.removeEventListener('resize',sync)}},[items.length]);
+ const move=(direction:number)=>{const e=ref.current;if(e)e.scrollBy({left:direction*Math.max(100,e.clientWidth*.72),behavior:reduceMotion()?'auto':'smooth'})};
+ return <><div className="main-category-controls"><p>좌우로 넘겨 상품을 찾아보세요.</p><div><button type="button" aria-label="이전 상품 분류" disabled={edges.left} onClick={()=>move(-1)}>←</button><button type="button" aria-label="다음 상품 분류" disabled={edges.right} onClick={()=>move(1)}>→</button></div></div><div ref={ref} className="quick-scroll main-category-track" aria-label="상품 분류" tabIndex={0} onScroll={sync} onLoad={sync} onKeyDown={e=>{if(e.target!==e.currentTarget)return;if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();move(e.key==='ArrowLeft'?-1:1)}}}>{items.map((item:any)=><button className="quick-item" key={item.main} onClick={()=>onChoose(item.main)}><div className={'quick-circle '+item.cls} style={item.image?{backgroundImage:'url('+item.image+')',backgroundSize:'cover',backgroundPosition:'center'}:undefined}>{item.cls==='preserved'&&!item.image&&<PreservedIllustration/>}</div><div className="quick-name">{item.label}{item.preparing&&<small className="preparing-badge">준비 중</small>}</div></button>)}</div></>;
+}

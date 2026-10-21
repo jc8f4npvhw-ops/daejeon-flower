@@ -1,0 +1,11 @@
+import {admin} from './auth';
+import {Env,assert,json,productCode} from './types';
+import {loadContent} from './content';
+import {catalogPath} from '../../src/frontend/catalog-structure';
+export async function reservationDetail(req:Request,env:Env,id:number){
+ await admin(req,env);const order:any=await env.DB.prepare('SELECT * FROM orders WHERE id=?').bind(id).first();assert(order,404,'예약을 찾지 못했습니다.');
+ const content=await loadContent(env);const {results}=await env.DB.prepare('SELECT i.*,p.code product_code FROM order_items i LEFT JOIN products p ON p.id=i.product_id WHERE i.order_id=? ORDER BY i.id').bind(id).all();
+ const items=[];for(const row of results as any[]){const p=content.products.find((p:any)=>productCode(p.id)===row.product_code),customization=JSON.parse(row.customization_json||'{}');const messages=await env.DB.prepare('SELECT message_type,card_message,ribbon_left,ribbon_right FROM order_item_messages WHERE order_item_id=?').bind(row.id).all();items.push({productName:row.product_name_snapshot,style:row.style_name_snapshot,size:row.variant_name_snapshot,amount:row.line_total_krw,path:Array.isArray(customization.catalogPath)?customization.catalogPath:p?catalogPath({...p,name:row.product_name_snapshot},{style:row.style_name_snapshot,size:row.variant_name_snapshot}):[row.product_name_snapshot,row.style_name_snapshot,row.variant_name_snapshot].filter(Boolean),customization,messages:messages.results})}
+ const photo:any=await env.DB.prepare('SELECT m.r2_key FROM order_media om JOIN media m ON m.id=om.media_id WHERE om.order_id=? ORDER BY om.id DESC LIMIT 1').bind(id).first();
+ return json({deliveryPhoto:photo?'/api/media/'+photo.r2_key:null,id:order.id,orderNo:order.order_no,customerName:order.orderer_name,phone:order.orderer_phone,receiver:order.recipient_name,receiverPhone:order.recipient_phone,address:[order.delivery_address1,order.delivery_address2].filter(Boolean).join(' '),fulfillment:order.fulfillment_type==='PICKUP'?'픽업':'배송',requestedDate:order.fulfillment_at?.slice(0,10),requestedTime:order.fulfillment_at?.slice(11,16),status:order.status,paymentStatus:order.payment_status,total:order.total_krw,deliveryFee:order.delivery_fee_krw,request:order.request_note,items});
+}

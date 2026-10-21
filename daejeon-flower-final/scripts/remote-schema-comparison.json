@@ -1,0 +1,28 @@
+{
+  "provided_business_tables": 31,
+  "base_tables": 31,
+  "expected_tables": 40,
+  "missing_tables": [
+    "admin_activity",
+    "checkout_requests",
+    "content_revisions",
+    "customer_admin_notes",
+    "delivery_quotes",
+    "order_alert_acknowledgements",
+    "order_versions",
+    "private_payment_credentials",
+    "security_login_attempts"
+  ],
+  "unexpected_business_tables": [],
+  "base_schema_differences": [],
+  "notes": [
+    "orders: copied SQL line comment removed for local parsing only; original upload preserved"
+  ],
+  "not_verified": [
+    "Remote indexes/triggers",
+    "Seeded data values",
+    "Remote migration history",
+    "R2 objects",
+    "Remote schema not independently queried; user-provided export used"
+  ]
+}

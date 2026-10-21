@@ -1,0 +1,9 @@
+node_modules/
+.next/
+dist/
+.vinext/
+.cloudflare/
+.wrangler/
+.dev.vars
+.env*
+!.env.example

@@ -1,0 +1,22 @@
+# .dev.vars로 복사해 로컬 테스트에만 사용합니다. 실제 비밀키를 소스에 커밋하지 마세요.
+SESSION_SECRET=replace-with-a-random-value-at-least-32-characters
+PAYMENTS_ENABLED=false
+# 토스페이먼츠를 사용할 때만 설정합니다. 테스트 키로 승인/취소 확인 후 실키로 전환합니다.
+TOSS_CLIENT_KEY=
+TOSS_SECRET_KEY=
+
+# 안내장 링크 직접 읽기. 캡처는 브라우저 무료 OCR 사용(별도 키 불필요).
+NOTICE_READER_ENABLED=true
+# 빈 값이면 확인한 삼가/바른손 호스트를 허용. 추가 사이트는 정확한 호스트를 쉼표로 등록.
+NOTICE_ALLOWED_HOSTS=samga.co.kr,letterb.barunsoncard.com
+
+# Delivery notification setup: server only. Never prefix these with NEXT_PUBLIC_.
+SOLAPI_API_KEY=
+SOLAPI_API_SECRET=
+SOLAPI_CHANNEL_ID=KA01PF261020165851146fAw6zXfI0v7
+SOLAPI_DELIVERY_TEMPLATE_ID=KA01TP2610201709032423Gh5ro5fvey
+# Enable sending only after D1 preparation, HTTPS origin and secrets are installed.
+KAKAO_SENDING_ENABLED=false
+# Keep false for the first test; only KAKAO_TEST_PHONE will receive messages.
+KAKAO_LIVE_SEND_ENABLED=false
+KAKAO_TEST_PHONE=

@@ -1,0 +1,48 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "daejeon-flower",
+  "compatibility_date": "2026-10-17",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "main": "worker.ts",
+  "assets": {
+    "directory": "dist/client",
+    "html_handling": "none",
+    "not_found_handling": "none",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/*",
+      "!/_next/static/*",
+      "!/*/_next/static/*",
+      "!/ocr/*"
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "daejeon-flower-db",
+      "database_id": "48c72584-adf3-4802-845e-4b2601ddcd6e",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "daejeon-flower-media"
+    }
+  ],
+  "triggers": {"crons": ["*/5 * * * *"]},
+  "vars": {
+    "KAKAO_SENDING_ENABLED": "false",
+    "KAKAO_LIVE_SEND_ENABLED": "false",
+    "SOLAPI_CHANNEL_ID": "KA01PF261020165851146fAw6zXfI0v7",
+    "SOLAPI_DELIVERY_TEMPLATE_ID": "KA01TP2610201709032423Gh5ro5fvey",
+    "PAYMENTS_ENABLED": "false",
+    "NOTICE_READER_ENABLED": "true",
+    "NOTICE_ALLOWED_HOSTS": "samga.co.kr,letterb.barunsoncard.com"
+  },
+  "observability": {
+    "enabled": false
+  }
+}

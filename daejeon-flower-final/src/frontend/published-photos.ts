@@ -1,0 +1,3 @@
+export function publishedProductPhotos(data:any,product?:string,style?:string,size?:string){
+ const seen=new Set<string>();return (data.reviewFeed||[]).map((p:any,i:number)=>({...p,position:i})).filter((p:any)=>p.status==='published'&&p.privacyChecked===true&&p.permissionConfirmed===true&&p.sku&&(!product||p.sku.product===product)&&(style===undefined||p.sku.style===style)&&(size===undefined||p.sku.size===size)&&data.covers?.[p.imageKey]?.src).sort((a:any,b:any)=>b.position-a.position).flatMap((p:any)=>{const im=data.covers[p.imageKey];if(seen.has(im.src))return [];seen.add(im.src);return [{...im,sku:p.sku,label:p.sku.size||p.sku.product,caption:p.caption,source:'공개 제작사진'}]});
+}

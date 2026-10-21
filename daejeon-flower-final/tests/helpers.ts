@@ -1,0 +1,11 @@
+import {DatabaseSync} from 'node:sqlite';
+import fs from 'node:fs';
+export function fixture(){const sql=new DatabaseSync(':memory:');sql.exec(fs.readFileSync(new URL('./existing-D1-FINAL.sql',import.meta.url),'utf8'));sql.exec(fs.readFileSync(new URL('../migrations/0001_storefront_extensions.sql',import.meta.url),'utf8'));
+sql.exec(fs.readFileSync(new URL('../migrations/0002_admin_workspace.sql',import.meta.url),'utf8'));
+sql.exec(fs.readFileSync(new URL('../migrations/0003_order_alert_acknowledgements.sql',import.meta.url),'utf8'));
+sql.exec(fs.readFileSync(new URL('../migrations/0004_private_payment_access.sql',import.meta.url),'utf8'));
+sql.exec(fs.readFileSync(new URL('../migrations/0005_oriental_orchid_varieties.sql',import.meta.url),'utf8'));
+sql.exec(fs.readFileSync(new URL('../migrations/0006_delivery_notifications.sql',import.meta.url),'utf8'));
+class Statement{args:any[]=[];constructor(public query:string){}bind(...args:any[]){this.args=args;return this}async first(){return sql.prepare(this.query).get(...this.args)||null}async all(){return {results:sql.prepare(this.query).all(...this.args),success:true}}async run(){const r=sql.prepare(this.query).run(...this.args);return {success:true,meta:{changes:Number(r.changes),last_row_id:Number(r.lastInsertRowid)}}}}
+const DB:any={prepare:(q:string)=>new Statement(q),batch:async(statements:any[])=>{sql.exec('BEGIN');try{const result=[];for(const s of statements)result.push(await s.run());sql.exec('COMMIT');return result}catch(e){sql.exec('ROLLBACK');throw e}}};const objects=new Map();const MEDIA:any={put:async(k:string,value:any,meta:any)=>{objects.set(k,{body:value,httpMetadata:meta.httpMetadata})},get:async(k:string)=>objects.get(k)||null};return {DB,MEDIA,sql,objects,SESSION_SECRET:'test-only-'+ 'a'.repeat(64),TOSS_CLIENT_KEY:'test_ck_mock',TOSS_SECRET_KEY:'test_sk_mock',PAYMENTS_ENABLED:'true'};}
+export async function passwordHash(password:string){const salt=crypto.getRandomValues(new Uint8Array(16)),key=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveBits']);const result=await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},key,256);const hex=(b:Uint8Array)=>Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');return `pbkdf2-sha256$100000$${hex(salt)}$${hex(new Uint8Array(result))}`;}

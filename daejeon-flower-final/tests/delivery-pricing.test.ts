@@ -1,0 +1,31 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+import {deliveryEstimate,deliveryPricingError} from '../src/frontend/delivery-pricing';
+import {DeliveryFeeNotice} from '../src/frontend/delivery-fee-notice';
+import {upgradeWreathRelease} from '../src/frontend/content-upgrades';
+
+test('delivery unknown stays unconfirmed; explicit zero and nonzero surcharges are distinct',()=>{
+ const settings={deliveryPricing:{baseFee:5000,zones:[{id:'a',label:'대전 동구 가오동',additionalFee:0},{id:'b',label:'추후 제공 지역',additionalFee:3000},{id:'c',label:'요금 미정 지역',additionalFee:null}]}};
+ assert.equal(deliveryEstimate(settings).total,null);
+ assert.equal(deliveryEstimate(settings,'unknown').total,null);
+ assert.equal(deliveryEstimate(settings,'c').total,null);
+ assert.equal(deliveryEstimate(settings,'a').total,5000);
+ assert.equal(deliveryEstimate(settings,'b').total,8000);
+ assert.equal(deliveryPricingError(settings),'');
+ assert(deliveryPricingError({deliveryPricing:{baseFee:5000,zones:[{id:'a',label:'지역',additionalFee:-1}]}}));
+ assert(deliveryPricingError({deliveryPricing:{baseFee:5000,zones:[{id:'a',label:'지역',additionalFee:0},{id:'b',label:'지역',additionalFee:0}]}}));
+ const old={settings:{paymentsEnabled:false},wreathRelease:2,products:[]};
+ const next=upgradeWreathRelease(old);
+ assert.equal(next.settings.deliveryPricing.baseFee,5000);
+ assert.equal(next.settings.deliveryPricing.zones.length,0);
+ assert.equal(next.settings.paymentsEnabled,false);
+ assert.equal((old.settings as any).deliveryPricing,undefined);
+ const changed={...next,settings:{...next.settings,...settings}};
+ assert.equal(upgradeWreathRelease(changed),changed);
+ const pending=renderToStaticMarkup(React.createElement(DeliveryFeeNotice,{settings:{}}));
+ assert(pending.includes('5,000원'));assert(pending.includes('배송비 확정 후 안내'));assert(!pending.includes('+ 0원'));
+ const zero=renderToStaticMarkup(React.createElement(DeliveryFeeNotice,{settings,zoneId:'a'}));
+ assert(zero.includes('+ 0원'));assert(zero.includes('예상 배송비'));
+});

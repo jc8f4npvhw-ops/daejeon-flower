@@ -1,0 +1,3154 @@
+[
+  {
+    "name": "admin_activity",
+    "sql": "CREATE TABLE admin_activity (\n id INTEGER PRIMARY KEY AUTOINCREMENT,\n admin_user_id INTEGER,\n action TEXT NOT NULL,\n target_type TEXT NOT NULL,\n target_id TEXT,\n created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n FOREIGN KEY(admin_user_id) REFERENCES admin_users(id)\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "admin_user_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "action",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "target_type",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "target_id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "admin_sessions",
+    "sql": "CREATE TABLE admin_sessions (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  admin_user_id INTEGER NOT NULL,\n  token_hash TEXT NOT NULL UNIQUE,\n  device_name TEXT,\n  expires_at TEXT NOT NULL,\n  last_used_at TEXT,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (admin_user_id) REFERENCES admin_users(id) ON DELETE CASCADE\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "admin_user_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "token_hash",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "device_name",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "expires_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "last_used_at",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "admin_users",
+    "sql": "CREATE TABLE admin_users (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  username TEXT NOT NULL UNIQUE,\n  password_hash TEXT NOT NULL,\n  display_name TEXT NOT NULL,\n  role TEXT NOT NULL CHECK (role IN ('OWNER','MANAGER','DRIVER')),\n  is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0,1)),\n  last_login_at TEXT,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "username",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "password_hash",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "display_name",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "role",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "is_active",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "last_login_at",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "anniversaries",
+    "sql": "CREATE TABLE anniversaries (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  customer_id INTEGER NOT NULL,\n  relationship_label TEXT,\n  occasion_type TEXT NOT NULL,\n  month INTEGER NOT NULL CHECK (month BETWEEN 1 AND 12),\n  day INTEGER NOT NULL CHECK (day BETWEEN 1 AND 31),\n  notify_enabled INTEGER NOT NULL DEFAULT 1 CHECK (notify_enabled IN (0,1)),\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "customer_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "relationship_label",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "occasion_type",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "month",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "day",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "notify_enabled",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "anniversary_benefits",
+    "sql": "CREATE TABLE anniversary_benefits (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  anniversary_id INTEGER NOT NULL,\n  benefit_year INTEGER NOT NULL,\n  code TEXT NOT NULL UNIQUE,\n  amount_krw INTEGER NOT NULL DEFAULT 2000,\n  valid_from TEXT NOT NULL,\n  valid_until TEXT NOT NULL,\n  status TEXT NOT NULL DEFAULT 'ISSUED'\n    CHECK (status IN ('ISSUED','USED','EXPIRED','CANCELLED')),\n  used_order_id INTEGER,\n  issued_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  used_at TEXT,\n  UNIQUE(anniversary_id, benefit_year),\n  FOREIGN KEY (anniversary_id) REFERENCES anniversaries(id) ON DELETE CASCADE,\n  FOREIGN KEY (used_order_id) REFERENCES orders(id) ON DELETE SET NULL\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "anniversary_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "benefit_year",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "code",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "amount_krw",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "2000",
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "valid_from",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "valid_until",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "status",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'ISSUED'",
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "used_order_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "issued_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "cid": 10,
+        "name": "used_at",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "business_hours",
+    "sql": "CREATE TABLE business_hours (\n  weekday INTEGER PRIMARY KEY CHECK (weekday BETWEEN 0 AND 6),\n  is_open INTEGER NOT NULL DEFAULT 1 CHECK (is_open IN (0,1)),\n  open_time TEXT,\n  close_time TEXT,\n  pickup_start_time TEXT,\n  pickup_end_time TEXT,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "weekday",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "is_open",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "open_time",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "close_time",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "pickup_start_time",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "pickup_end_time",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "categories",
+    "sql": "CREATE TABLE categories (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  parent_id INTEGER,\n  code TEXT NOT NULL UNIQUE,\n  name_ko TEXT NOT NULL,\n  name_en TEXT,\n  description TEXT,\n  cover_media_id INTEGER,\n  sales_mode TEXT NOT NULL DEFAULT 'ORDER'\n    CHECK (sales_mode IN ('ORDER','CONSULT','COMING_SOON')),\n  is_visible INTEGER NOT NULL DEFAULT 1 CHECK (is_visible IN (0,1)),\n  sort_order INTEGER NOT NULL DEFAULT 0,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL,\n  FOREIGN KEY (cover_media_id) REFERENCES media(id) ON DELETE SET NULL\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "parent_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "code",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "name_ko",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "name_en",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "description",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "cover_media_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "sales_mode",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'ORDER'",
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "is_visible",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "sort_order",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 10,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "cid": 11,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "checkout_requests",
+    "sql": "CREATE TABLE checkout_requests(idempotency_key TEXT PRIMARY KEY,request_hash TEXT NOT NULL,order_no TEXT NOT NULL UNIQUE,token_hash TEXT NOT NULL,expires_at TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "idempotency_key",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "request_hash",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "order_no",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "token_hash",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "expires_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "content_blocks",
+    "sql": "CREATE TABLE content_blocks (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  block_key TEXT NOT NULL UNIQUE,\n  title TEXT,\n  subtitle TEXT,\n  body TEXT,\n  media_id INTEGER,\n  cta_label TEXT,\n  cta_url TEXT,\n  payload_json TEXT,\n  is_enabled INTEGER NOT NULL DEFAULT 1 CHECK (is_enabled IN (0,1)),\n  updated_by_admin_id INTEGER,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (media_id) REFERENCES media(id) ON DELETE SET NULL,\n  FOREIGN KEY (updated_by_admin_id) REFERENCES admin_users(id) ON DELETE SET NULL\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "block_key",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "title",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "subtitle",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "body",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "media_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "cta_label",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "cta_url",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "payload_json",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "is_enabled",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 10,
+        "name": "updated_by_admin_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 11,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "cid": 12,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "content_drafts",
+    "sql": "CREATE TABLE content_drafts (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  feed_item_id INTEGER,\n  media_id INTEGER,\n  channel TEXT NOT NULL CHECK (channel IN ('NAVER_BLOG','INSTAGRAM','THREADS')),\n  title TEXT,\n  body TEXT NOT NULL,\n  status TEXT NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT','APPROVED','PUBLISHED')),\n  published_url TEXT,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (feed_item_id) REFERENCES feed_items(id) ON DELETE SET NULL,\n  FOREIGN KEY (media_id) REFERENCES media(id) ON DELETE SET NULL\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "feed_item_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "media_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "channel",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "title",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "body",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "status",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'DRAFT'",
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "published_url",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "content_revisions",
+    "sql": "CREATE TABLE content_revisions(revision INTEGER PRIMARY KEY,content_json TEXT NOT NULL,changed_by INTEGER,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(changed_by) REFERENCES admin_users(id))",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "revision",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "content_json",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "changed_by",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "customer_admin_notes",
+    "sql": "CREATE TABLE customer_admin_notes (\n customer_id INTEGER PRIMARY KEY,\n note TEXT NOT NULL DEFAULT '',\n updated_by INTEGER,\n updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n FOREIGN KEY(customer_id) REFERENCES customers(id) ON DELETE CASCADE,\n FOREIGN KEY(updated_by) REFERENCES admin_users(id)\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "customer_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "note",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "''",
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "updated_by",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "customers",
+    "sql": "CREATE TABLE customers (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  phone_normalized TEXT UNIQUE,\n  name TEXT,\n  kakao_user_id TEXT UNIQUE,\n  email TEXT,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "phone_normalized",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "name",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "kakao_user_id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "email",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "daily_capacity",
+    "sql": "CREATE TABLE daily_capacity (\n  capacity_date TEXT PRIMARY KEY,\n  is_accepting_orders INTEGER NOT NULL DEFAULT 1 CHECK (is_accepting_orders IN (0,1)),\n  max_orders INTEGER,\n  memo TEXT,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "capacity_date",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "is_accepting_orders",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "max_orders",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "memo",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "delivery_quotes",
+    "sql": "CREATE TABLE delivery_quotes(id TEXT PRIMARY KEY,request_hash TEXT NOT NULL,idempotency_key TEXT UNIQUE NOT NULL,payload_json TEXT NOT NULL,fee_krw INTEGER,token_hash TEXT NOT NULL,expires_at TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'PENDING' CHECK(status IN ('PENDING','CONFIRMED','CHECKOUT','EXPIRED')),created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "request_hash",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "idempotency_key",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "payload_json",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "fee_krw",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "token_hash",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "expires_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "status",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'PENDING'",
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "feed_items",
+    "sql": "CREATE TABLE feed_items (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  source_order_media_id INTEGER,\n  media_id INTEGER NOT NULL,\n  product_id INTEGER,\n  occasion_id INTEGER,\n  caption TEXT,\n  cta_type TEXT NOT NULL DEFAULT 'NONE'\n    CHECK (cta_type IN ('NONE','ORDER','CONSULT','NAVER')),\n  status TEXT NOT NULL DEFAULT 'DRAFT'\n    CHECK (status IN ('DRAFT','PUBLISHED','HIDDEN')),\n  sort_order INTEGER NOT NULL DEFAULT 0,\n  published_at TEXT,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (source_order_media_id) REFERENCES order_media(id) ON DELETE SET NULL,\n  FOREIGN KEY (media_id) REFERENCES media(id) ON DELETE CASCADE,\n  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL,\n  FOREIGN KEY (occasion_id) REFERENCES occasions(id) ON DELETE SET NULL\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "source_order_media_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "media_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "product_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "occasion_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "caption",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "cta_type",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'NONE'",
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "status",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'DRAFT'",
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "sort_order",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "published_at",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 10,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "cid": 11,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "media",
+    "sql": "CREATE TABLE media (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  r2_key TEXT NOT NULL UNIQUE,\n  public_url TEXT,\n  original_name TEXT,\n  mime_type TEXT,\n  width INTEGER,\n  height INTEGER,\n  alt_text TEXT,\n  uploaded_by_admin_id INTEGER,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (uploaded_by_admin_id) REFERENCES admin_users(id) ON DELETE SET NULL\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "r2_key",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "public_url",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "original_name",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "mime_type",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "width",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "height",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "alt_text",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "uploaded_by_admin_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "notifications",
+    "sql": "CREATE TABLE notifications (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  order_id INTEGER,\n  customer_id INTEGER,\n  notification_type TEXT NOT NULL,\n  channel TEXT NOT NULL CHECK (channel IN ('KAKAO_ALIMTALK','SMS')),\n  recipient_phone TEXT NOT NULL,\n  template_code TEXT,\n  status TEXT NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING','SENT','FAILED')),\n  provider_message_id TEXT,\n  failure_reason TEXT,\n  sent_at TEXT,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL,\n  FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "order_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "customer_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "notification_type",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "channel",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "recipient_phone",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "template_code",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "status",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'PENDING'",
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "provider_message_id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "failure_reason",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 10,
+        "name": "sent_at",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 11,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "occasion_recommendations",
+    "sql": "CREATE TABLE occasion_recommendations (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  occasion_id INTEGER NOT NULL,\n  category_id INTEGER,\n  product_id INTEGER,\n  style_id INTEGER,\n  variant_id INTEGER,\n  label TEXT,\n  preset_json TEXT,\n  is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0,1)),\n  sort_order INTEGER NOT NULL DEFAULT 0,\n  CHECK (category_id IS NOT NULL OR product_id IS NOT NULL),\n  FOREIGN KEY (occasion_id) REFERENCES occasions(id) ON DELETE CASCADE,\n  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,\n  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,\n  FOREIGN KEY (style_id) REFERENCES product_styles(id) ON DELETE SET NULL,\n  FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE SET NULL\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "occasion_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "category_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "product_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "style_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "variant_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "label",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "preset_json",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "is_active",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "sort_order",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "occasions",
+    "sql": "CREATE TABLE occasions (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  code TEXT NOT NULL UNIQUE,\n  name_ko TEXT NOT NULL,\n  description TEXT,\n  media_id INTEGER,\n  is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0,1)),\n  sort_order INTEGER NOT NULL DEFAULT 0,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (media_id) REFERENCES media(id) ON DELETE SET NULL\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "code",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "name_ko",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "description",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "media_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "is_active",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "sort_order",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "order_alert_acknowledgements",
+    "sql": "CREATE TABLE order_alert_acknowledgements (\n order_id INTEGER PRIMARY KEY REFERENCES orders(id) ON DELETE CASCADE,\n acknowledged_by INTEGER REFERENCES admin_users(id) ON DELETE SET NULL,\n acknowledged_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "order_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "acknowledged_by",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "acknowledged_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "order_consents",
+    "sql": "CREATE TABLE order_consents (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  order_id INTEGER NOT NULL,\n  consent_type TEXT NOT NULL CHECK (consent_type IN ('PRIVACY','MARKETING','ANNIVERSARY')),\n  is_agreed INTEGER NOT NULL CHECK (is_agreed IN (0,1)),\n  policy_version TEXT NOT NULL,\n  evidence_json TEXT,\n  agreed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  UNIQUE(order_id, consent_type),\n  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "order_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "consent_type",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "is_agreed",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "policy_version",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "evidence_json",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "agreed_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "order_item_messages",
+    "sql": "CREATE TABLE order_item_messages (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  order_item_id INTEGER NOT NULL UNIQUE,\n  message_type TEXT NOT NULL CHECK (message_type IN ('NONE','CARD','RIBBON')),\n  card_message TEXT,\n  ribbon_left TEXT,\n  ribbon_right TEXT,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "order_item_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "message_type",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "card_message",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "ribbon_left",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "ribbon_right",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "order_item_options",
+    "sql": "CREATE TABLE order_item_options (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  order_item_id INTEGER NOT NULL,\n  group_code TEXT,\n  option_code TEXT,\n  label_snapshot TEXT NOT NULL,\n  value_snapshot TEXT,\n  price_delta_krw INTEGER NOT NULL DEFAULT 0,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "order_item_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "group_code",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "option_code",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "label_snapshot",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "value_snapshot",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "price_delta_krw",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "order_items",
+    "sql": "CREATE TABLE order_items (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  order_id INTEGER NOT NULL,\n  product_id INTEGER,\n  style_id INTEGER,\n  variant_id INTEGER,\n  product_name_snapshot TEXT NOT NULL,\n  style_name_snapshot TEXT,\n  variant_name_snapshot TEXT,\n  quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),\n  unit_price_krw INTEGER NOT NULL DEFAULT 0,\n  option_price_krw INTEGER NOT NULL DEFAULT 0,\n  line_total_krw INTEGER NOT NULL DEFAULT 0,\n  customization_json TEXT,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,\n  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL,\n  FOREIGN KEY (style_id) REFERENCES product_styles(id) ON DELETE SET NULL,\n  FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE SET NULL\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "order_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "product_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "style_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "variant_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "product_name_snapshot",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "style_name_snapshot",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "variant_name_snapshot",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "quantity",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "unit_price_krw",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 10,
+        "name": "option_price_krw",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 11,
+        "name": "line_total_krw",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 12,
+        "name": "customization_json",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 13,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "order_media",
+    "sql": "CREATE TABLE order_media (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  order_id INTEGER NOT NULL,\n  media_id INTEGER NOT NULL,\n  kind TEXT NOT NULL DEFAULT 'DELIVERY_COMPLETE'\n    CHECK (kind IN ('DELIVERY_COMPLETE','ORDER_COMPLETE')),\n  is_feed_candidate INTEGER NOT NULL DEFAULT 1 CHECK (is_feed_candidate IN (0,1)),\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,\n  FOREIGN KEY (media_id) REFERENCES media(id) ON DELETE CASCADE\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "order_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "media_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "kind",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'DELIVERY_COMPLETE'",
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "is_feed_candidate",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "order_versions",
+    "sql": "CREATE TABLE order_versions(order_id INTEGER PRIMARY KEY,version INTEGER NOT NULL DEFAULT 0,operation_token TEXT,lock_expires_at TEXT,FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "order_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "version",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "operation_token",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "lock_expires_at",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "orders",
+    "sql": "CREATE TABLE orders (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  order_no TEXT NOT NULL UNIQUE,\n  customer_id INTEGER,\n  source_occasion_id INTEGER,\n\n  -- PENDING_PAYMENT는 결제 중인 서버 내부 상태이며 관리자 화면에는 노출하지 않음\n  status TEXT NOT NULL DEFAULT 'PENDING_PAYMENT'\n    CHECK (status IN ('PENDING_PAYMENT','NEW','IN_PRODUCTION','PICKED_UP','DELIVERED','CANCELLED')),\n  payment_status TEXT NOT NULL DEFAULT 'PENDING'\n    CHECK (payment_status IN ('NOT_REQUIRED','PENDING','PAID','FAILED','CANCELLED','PARTIAL_REFUND','REFUNDED')),\n\n  sales_channel TEXT NOT NULL DEFAULT 'WEB'\n    CHECK (sales_channel IN ('WEB','ADMIN')),\n  fulfillment_type TEXT NOT NULL\n    CHECK (fulfillment_type IN ('PICKUP','DELIVERY','SERVICE')),\n\n  orderer_name TEXT NOT NULL,\n  orderer_phone TEXT NOT NULL,\n  kakao_updates_enabled INTEGER NOT NULL DEFAULT 0 CHECK (kakao_updates_enabled IN (0,1)),\n  recipient_name TEXT,\n  recipient_phone TEXT,\n  fulfillment_at TEXT,\n\n  delivery_postcode TEXT,\n  delivery_address1 TEXT,\n  delivery_address2 TEXT,\n  delivery_note TEXT,\n  delivery_fee_status TEXT NOT NULL DEFAULT 'NOT_REQUIRED'\n    CHECK (delivery_fee_status IN ('NOT_REQUIRED','PENDING','CONFIRMED')),\n  delivery_fee_krw INTEGER NOT NULL DEFAULT 0,\n\n  subtotal_krw INTEGER NOT NULL DEFAULT 0,\n  options_krw INTEGER NOT NULL DEFAULT 0,\n  discount_krw INTEGER NOT NULL DEFAULT 0,\n  total_krw INTEGER NOT NULL DEFAULT 0,\n  currency TEXT NOT NULL DEFAULT 'KRW',\n\n  request_note TEXT,\n  accepted_by_admin_id INTEGER,\n  completed_by_admin_id INTEGER,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  accepted_at TEXT,\n  completed_at TEXT,\n  cancelled_at TEXT,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\n  FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL,\n  FOREIGN KEY (source_occasion_id) REFERENCES occasions(id) ON DELETE SET NULL,\n  FOREIGN KEY (accepted_by_admin_id) REFERENCES admin_users(id) ON DELETE SET NULL,\n  FOREIGN KEY (completed_by_admin_id) REFERENCES admin_users(id) ON DELETE SET NULL\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "order_no",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "customer_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "source_occasion_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "status",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'PENDING_PAYMENT'",
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "payment_status",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'PENDING'",
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "sales_channel",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'WEB'",
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "fulfillment_type",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "orderer_name",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "orderer_phone",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 10,
+        "name": "kakao_updates_enabled",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 11,
+        "name": "recipient_name",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 12,
+        "name": "recipient_phone",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 13,
+        "name": "fulfillment_at",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 14,
+        "name": "delivery_postcode",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 15,
+        "name": "delivery_address1",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 16,
+        "name": "delivery_address2",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 17,
+        "name": "delivery_note",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 18,
+        "name": "delivery_fee_status",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'NOT_REQUIRED'",
+        "pk": 0
+      },
+      {
+        "cid": 19,
+        "name": "delivery_fee_krw",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 20,
+        "name": "subtotal_krw",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 21,
+        "name": "options_krw",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 22,
+        "name": "discount_krw",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 23,
+        "name": "total_krw",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 24,
+        "name": "currency",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'KRW'",
+        "pk": 0
+      },
+      {
+        "cid": 25,
+        "name": "request_note",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 26,
+        "name": "accepted_by_admin_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 27,
+        "name": "completed_by_admin_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 28,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "cid": 29,
+        "name": "accepted_at",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 30,
+        "name": "completed_at",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 31,
+        "name": "cancelled_at",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 32,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "outbound_click_events",
+    "sql": "CREATE TABLE outbound_click_events (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  event_key TEXT NOT NULL,\n  destination TEXT NOT NULL,\n  anonymous_session_id TEXT,\n  order_id INTEGER,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "event_key",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "destination",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "anonymous_session_id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "order_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "payments",
+    "sql": "CREATE TABLE payments (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  order_id INTEGER NOT NULL,\n  provider TEXT NOT NULL,\n  provider_payment_key TEXT,\n  provider_order_id TEXT,\n  method TEXT,\n  amount_krw INTEGER NOT NULL,\n  cancelled_amount_krw INTEGER NOT NULL DEFAULT 0,\n  status TEXT NOT NULL DEFAULT 'PENDING'\n    CHECK (status IN ('PENDING','PAID','FAILED','CANCELLED','PARTIAL_REFUND','REFUNDED')),\n  receipt_url TEXT,\n  failure_code TEXT,\n  failure_message TEXT,\n  approved_at TEXT,\n  cancelled_at TEXT,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "order_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "provider",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "provider_payment_key",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "provider_order_id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "method",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "amount_krw",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "cancelled_amount_krw",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "status",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'PENDING'",
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "receipt_url",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 10,
+        "name": "failure_code",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 11,
+        "name": "failure_message",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 12,
+        "name": "approved_at",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 13,
+        "name": "cancelled_at",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 14,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "cid": 15,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "private_payment_credentials",
+    "sql": "CREATE TABLE private_payment_credentials (\n entry_id TEXT PRIMARY KEY,\n password_hash TEXT NOT NULL,\n updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "entry_id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "password_hash",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "product_media",
+    "sql": "CREATE TABLE product_media (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  product_id INTEGER NOT NULL,\n  style_id INTEGER,\n  variant_id INTEGER,\n  media_id INTEGER NOT NULL,\n  role TEXT NOT NULL DEFAULT 'GALLERY'\n    CHECK (role IN ('HERO','GALLERY','STYLE_GALLERY','VARIANT_EXAMPLE','DETAIL','PROFILE')),\n  is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0,1)),\n  sort_order INTEGER NOT NULL DEFAULT 0,\n  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,\n  FOREIGN KEY (style_id) REFERENCES product_styles(id) ON DELETE CASCADE,\n  FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE,\n  FOREIGN KEY (media_id) REFERENCES media(id) ON DELETE CASCADE\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "product_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "style_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "variant_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "media_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "role",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'GALLERY'",
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "is_active",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "sort_order",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "product_option_groups",
+    "sql": "CREATE TABLE product_option_groups (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  product_id INTEGER NOT NULL,\n  code TEXT NOT NULL,\n  label TEXT NOT NULL,\n  selection_type TEXT NOT NULL DEFAULT 'SINGLE'\n    CHECK (selection_type IN ('SINGLE','MULTI','BOOLEAN')),\n  is_required INTEGER NOT NULL DEFAULT 0 CHECK (is_required IN (0,1)),\n  is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0,1)),\n  sort_order INTEGER NOT NULL DEFAULT 0,\n  UNIQUE(product_id, code),\n  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "product_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "code",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "label",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "selection_type",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'SINGLE'",
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "is_required",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "is_active",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "sort_order",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "product_options",
+    "sql": "CREATE TABLE product_options (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  group_id INTEGER NOT NULL,\n  code TEXT NOT NULL,\n  label TEXT NOT NULL,\n  price_delta_krw INTEGER NOT NULL DEFAULT 0,\n  is_default INTEGER NOT NULL DEFAULT 0 CHECK (is_default IN (0,1)),\n  is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0,1)),\n  sort_order INTEGER NOT NULL DEFAULT 0,\n  metadata_json TEXT,\n  UNIQUE(group_id, code),\n  FOREIGN KEY (group_id) REFERENCES product_option_groups(id) ON DELETE CASCADE\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "group_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "code",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "label",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "price_delta_krw",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "is_default",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "is_active",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "sort_order",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "metadata_json",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "product_styles",
+    "sql": "CREATE TABLE product_styles (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  product_id INTEGER NOT NULL,\n  code TEXT NOT NULL,\n  name_ko TEXT NOT NULL,\n  maker_name TEXT,\n  maker_intro TEXT,\n  profile_media_id INTEGER,\n  is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0,1)),\n  sort_order INTEGER NOT NULL DEFAULT 0,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  UNIQUE(product_id, code),\n  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,\n  FOREIGN KEY (profile_media_id) REFERENCES media(id) ON DELETE SET NULL\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "product_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "code",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "name_ko",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "maker_name",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "maker_intro",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "profile_media_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "is_active",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "sort_order",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "cid": 10,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "product_variants",
+    "sql": "CREATE TABLE product_variants (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  product_id INTEGER NOT NULL,\n  style_id INTEGER,\n  code TEXT NOT NULL,\n  label TEXT NOT NULL,\n  secondary_label TEXT,\n  variant_type TEXT NOT NULL DEFAULT 'GENERIC',\n  price_krw INTEGER,\n  is_best INTEGER NOT NULL DEFAULT 0 CHECK (is_best IN (0,1)),\n  pickup_allowed INTEGER NOT NULL DEFAULT 1 CHECK (pickup_allowed IN (0,1)),\n  delivery_allowed INTEGER NOT NULL DEFAULT 1 CHECK (delivery_allowed IN (0,1)),\n  is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0,1)),\n  sort_order INTEGER NOT NULL DEFAULT 0,\n  metadata_json TEXT,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  UNIQUE(product_id, style_id, code),\n  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,\n  FOREIGN KEY (style_id) REFERENCES product_styles(id) ON DELETE SET NULL\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "product_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "style_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "code",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "label",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "secondary_label",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "variant_type",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'GENERIC'",
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "price_krw",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "is_best",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "pickup_allowed",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 10,
+        "name": "delivery_allowed",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 11,
+        "name": "is_active",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 12,
+        "name": "sort_order",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 13,
+        "name": "metadata_json",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 14,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "cid": 15,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "products",
+    "sql": "CREATE TABLE products (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  category_id INTEGER NOT NULL,\n  code TEXT NOT NULL UNIQUE,\n  slug TEXT NOT NULL UNIQUE,\n  name_ko TEXT NOT NULL,\n  name_en TEXT,\n  short_description TEXT,\n  description TEXT,\n  form_type TEXT NOT NULL DEFAULT 'GENERIC',\n  sales_mode TEXT NOT NULL DEFAULT 'ORDER'\n    CHECK (sales_mode IN ('ORDER','CONSULT','COMING_SOON')),\n  is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0,1)),\n  is_best INTEGER NOT NULL DEFAULT 0 CHECK (is_best IN (0,1)),\n  pickup_allowed INTEGER NOT NULL DEFAULT 1 CHECK (pickup_allowed IN (0,1)),\n  delivery_allowed INTEGER NOT NULL DEFAULT 1 CHECK (delivery_allowed IN (0,1)),\n  sort_order INTEGER NOT NULL DEFAULT 0,\n  metadata_json TEXT,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "category_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "code",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "slug",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "name_ko",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "name_en",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 6,
+        "name": "short_description",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 7,
+        "name": "description",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 8,
+        "name": "form_type",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'GENERIC'",
+        "pk": 0
+      },
+      {
+        "cid": 9,
+        "name": "sales_mode",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'ORDER'",
+        "pk": 0
+      },
+      {
+        "cid": 10,
+        "name": "is_active",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 11,
+        "name": "is_best",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 12,
+        "name": "pickup_allowed",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 13,
+        "name": "delivery_allowed",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 14,
+        "name": "sort_order",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 15,
+        "name": "metadata_json",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 16,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "cid": 17,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "security_login_attempts",
+    "sql": "CREATE TABLE security_login_attempts(attempt_key TEXT PRIMARY KEY,attempts INTEGER NOT NULL,reset_at TEXT NOT NULL)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "attempt_key",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "attempts",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "reset_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "settings",
+    "sql": "CREATE TABLE settings (\n  setting_key TEXT PRIMARY KEY,\n  value_text TEXT,\n  value_type TEXT NOT NULL DEFAULT 'STRING'\n    CHECK (value_type IN ('STRING','BOOLEAN','NUMBER','JSON')),\n  description TEXT,\n  updated_by_admin_id INTEGER,\n  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  FOREIGN KEY (updated_by_admin_id) REFERENCES admin_users(id) ON DELETE SET NULL\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "setting_key",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "value_text",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "value_type",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "'STRING'",
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "description",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "updated_by_admin_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 5,
+        "name": "updated_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  },
+  {
+    "name": "store_closures",
+    "sql": "CREATE TABLE store_closures (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  closure_date TEXT NOT NULL UNIQUE,\n  is_closed INTEGER NOT NULL DEFAULT 1 CHECK (is_closed IN (0,1)),\n  reason TEXT,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n)",
+    "columns": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "closure_date",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "is_closed",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "1",
+        "pk": 0
+      },
+      {
+        "cid": 3,
+        "name": "reason",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 4,
+        "name": "created_at",
+        "type": "TEXT",
+        "notnull": 1,
+        "dflt_value": "CURRENT_TIMESTAMP",
+        "pk": 0
+      }
+    ]
+  }
+]

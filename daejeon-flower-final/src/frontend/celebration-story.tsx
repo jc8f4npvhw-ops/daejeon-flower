@@ -1,0 +1,10 @@
+import {cms,txt} from './cms';
+import React from 'react';
+import {WeddingFlow} from './wedding-flow';
+export function CelebrationStory({variants,times,phone}:any){return <article className="wreath-story celebration-story">
+<header className="wreath-intro"><span className="wreath-kicker">대전꽃백화점 · 축하화환</span><h1 style={{whiteSpace:'pre-line'}}>{txt('두 사람의 시작에,\n새 꽃으로 축하를 전합니다.')}</h1><p>오래 기억될 날에 건네는 마음.<br/><strong>재사용 꽃이 아닌 100% 새 꽃으로만 제작합니다.</strong></p><a className="text-link" href="#wreath-order">축하화환 선택으로 바로가기 ↓</a></header>
+<figure className="wreath-hero"><img src={cms.covers['축하화환 상세 메인']?.src||'/api/media/public/seed/celebrate-hero.png'} alt="제공받은 축하화환 사진의 배경을 예식장 로비로 편집한 이미지"/><figcaption>제공 화환 사진 · 예식장 배경 편집</figcaption><div className="wreath-stamp"><b>100%</b><span>새 꽃으로 제작</span></div></figure>
+<section className="wreath-principle"><span className="wreath-kicker">축하를 전하는 기준</span><h2>한 번뿐인 그날에,<br/>처음 전하는 꽃으로.</h2><p>한 번 사용한 화환의 꽃을 다시 사용하지 않습니다.<br/>축하하는 마음을 담아 100% 새 꽃으로만 제작합니다.</p><div className="wreath-facts"><div><span>01</span><b>새 꽃 사용</b><small>사용한 꽃을 재사용하지 않습니다.</small></div><div><span>02</span><b>축하의 마음을 담아</b><small>소중한 시작에 어울리는 풍성한 꽃 인사.</small></div></div></section>
+<section className="wreath-craft"><img src={cms.covers['축하화환 상세 구성']?.src||'/api/media/public/seed/celebrate-detail.png'} alt="화환 구성을 유지하고 예식장 배경으로 편집한 축하화환 사진" loading="lazy"/><div><span className="wreath-kicker">축하의 마음을 담아</span><h2>꽃은 풍성하게,<br/>마음은 분명하게.</h2><p>{txt('보내는 분의 이름과 축하 문구를 리본에 담습니다. 예식장과 예식홀, 두 분의 성함을 정확히 남겨주세요.')}</p></div></section>
+<section className="wreath-process"><span className="wreath-kicker">주문 전 확인해주세요</span><h2>장소와 시간까지,<br/>차근차근 확인합니다.</h2><ol><li><b>01 · 청첩장으로 간편하게</b><p>청첩장 링크를 남기거나 캡처를 선택할 수 있습니다. 예식 정보를 직접 입력하셔도 됩니다.</p></li><li><b>02 · 리본 문구 선택</b><p>祝結婚(축결혼), 祝華婚(축화혼) 중에서 선택하고 보내는 분의 상호·직함·성함을 적어주세요.</p></li><li><b>03 · 일정과 배송 확인</b><p>예식 날짜와 시간, 장소를 확인해 제작·배송 가능 여부와 배송비를 안내합니다.</p></li></ol><p className="w-flow-note">급한 일정은 전화로 먼저 확인해주세요. 최종 내용을 확인한 뒤 주문·결제로 이어집니다.</p></section>
+<WeddingFlow variants={variants} times={times} phone={phone} /></article>}

@@ -1,0 +1,12 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+const root=path.resolve(import.meta.dirname,'..');
+const out=path.join(root,'public/ocr');
+await fs.rm(out+'/core',{recursive:true,force:true});await fs.mkdir(out+'/core',{recursive:true});await fs.mkdir(out+'/lang',{recursive:true});
+await fs.copyFile(root+'/node_modules/tesseract.js/dist/worker.min.js',out+'/worker.min.js');
+for(const file of await fs.readdir(root+'/node_modules/tesseract.js-core'))if(/^tesseract-core(?:-simd|-relaxedsimd)?-lstm\.wasm(?:\.js)?$/.test(file))await fs.copyFile(root+'/node_modules/tesseract.js-core/'+file,out+'/core/'+file);
+for(const lang of ['kor','eng'])await fs.copyFile(root+'/node_modules/@tesseract.js-data/'+lang+'/4.0.0_best_int/'+lang+'.traineddata.gz',out+'/lang/'+lang+'.traineddata.gz');
+await fs.copyFile(root+'/node_modules/tesseract.js/LICENSE.md',out+'/LICENSE-tesseract.txt');
+await fs.copyFile(root+'/node_modules/tesseract.js-core/LICENSE',out+'/LICENSE-core.txt');
+await fs.writeFile(out+'/NOTICE.txt','Tesseract.js 7.0.0 / Tesseract.js-core: Apache-2.0. Language data: @tesseract.js-data/kor and eng 1.0.0 (MIT metadata), Tesseract language models (Apache-2.0). https://github.com/naptha/tesseract.js https://github.com/naptha/tessdata https://github.com/tesseract-ocr/tessdata_best\n');
+console.log('Self-hosted OCR assets prepared.');
