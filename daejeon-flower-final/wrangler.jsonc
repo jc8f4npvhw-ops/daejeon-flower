@@ -15,7 +15,8 @@
       "/*",
       "!/_next/static/*",
       "!/*/_next/static/*",
-      "!/ocr/*"
+      "!/ocr/*",
+      "!/plant-care.html"
     ]
   },
   "d1_databases": [
