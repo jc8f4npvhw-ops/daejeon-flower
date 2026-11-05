@@ -1,0 +1,1 @@
+export const occasionPhotos:Record<string,string>={"생일": "/occasions/occasion-0.webp", "감사": "/occasions/occasion-1.webp", "졸업": "/occasions/occasion-2.webp", "부모님 선물": "/occasions/occasion-3.webp", "기념일": "/occasions/occasion-4.webp", "개업": "/occasions/occasion-5.webp", "인사이동": "/occasions/occasion-6.webp"};

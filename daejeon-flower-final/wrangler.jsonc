@@ -16,7 +16,8 @@
       "!/_next/static/*",
       "!/*/_next/static/*",
       "!/ocr/*",
-      "!/plant-care.html"
+      "!/plant-care.html",
+      "!/occasions/*"
     ]
   },
   "d1_databases": [
