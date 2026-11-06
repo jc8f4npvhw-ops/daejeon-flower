@@ -195,3 +195,10 @@ a,a:visited,button{color:inherit;-webkit-text-fill-color:currentColor}button,a{t
 .notice-capture input[type=file]::file-selector-button{font:inherit;border:1px solid var(--line,#ddd);border-radius:12px;background:var(--soft,#efeee7);color:inherit;padding:12px 15px;margin-right:10px}
 .review-link a{display:flex;justify-content:center;align-items:center;min-height:48px;border:1px solid var(--line,#ddd);border-radius:14px;background:var(--soft,#f1f0e9);padding:12px;color:inherit;text-decoration:none}
 .sp-size-card>b{font-size:17px}.sp-size-card .sp-price{font-size:13px}
+
+/* Explicit Kakao actions: readable in sheets, forms and articles. */
+.app-shell .kakao-action,.kakao-action,.class-inquiry-dialog .kakao-action,a[href^="https://pf.kakao.com/"]{display:flex!important;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;width:fit-content;max-width:100%;min-height:48px;margin:14px auto!important;padding:13px 22px!important;border:1px solid #fee500!important;border-radius:14px;background:#fee500!important;color:#191919!important;text-align:center!important;text-decoration:none;font-weight:700;line-height:1.5;word-break:keep-all}
+.kakao-action:hover,a[href^="https://pf.kakao.com/"]:hover{background:#f4dc00!important;border-color:#f4dc00!important;color:#191919!important}
+.kakao-action:focus-visible,a[href^="https://pf.kakao.com/"]:focus-visible{outline:3px solid #675900;outline-offset:3px}
+.kakao-action:disabled{opacity:.6;cursor:not-allowed}.kakao-action *{color:inherit!important}
+.class-inquiry-dialog footer .kakao-action{width:100%;max-width:420px}

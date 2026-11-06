@@ -1,0 +1,29 @@
+{
+  "seed_original_bytes": 57890795,
+  "seed_thumbnail_bytes": 3342812,
+  "seed_large_bytes": 23260966,
+  "images": 148,
+  "care_html_before": 8281283,
+  "care_html_after": 233817,
+  "care_external_assets": {
+    "/care-assets/a0d9db46f45d1256d3f318b1-320.webp": 33230,
+    "/care-assets/d92e5fedca9e15603b500829-320.webp": 36738,
+    "/care-assets/5059825418a581b4550dcabe-960.webp": 84618,
+    "/care-assets/4452f8f0d46a222705aa170a-320.webp": 27380,
+    "/care-assets/4bc4169fb52401f9cff9dce4-960.webp": 189788,
+    "/care-assets/5059825418a581b4550dcabe-320.webp": 22388,
+    "/care-assets/4452f8f0d46a222705aa170a-960.webp": 103382,
+    "/care-assets/771d5cced89eeb0cb545d3cc-320.webp": 39332,
+    "/care-assets/8a8c35124f6bd8843ee43a46-960.webp": 131938,
+    "/care-assets/d92e5fedca9e15603b500829-960.webp": 216562,
+    "/care-assets/8183f5ded2224db6c135f68d.woff": 964748,
+    "/care-assets/0dfdf7c341d6ae3fd8c03f0b-320.webp": 35618,
+    "/care-assets/0dfdf7c341d6ae3fd8c03f0b-960.webp": 219238,
+    "/care-assets/8a8c35124f6bd8843ee43a46-320.webp": 24834,
+    "/care-assets/13cb003f4be8719a0501b1e9.woff": 873128,
+    "/care-assets/fad853f7f47c6c8b103171e7.woff2": 765892,
+    "/care-assets/771d5cced89eeb0cb545d3cc-960.webp": 227764,
+    "/care-assets/a0d9db46f45d1256d3f318b1-960.webp": 172860,
+    "/care-assets/4bc4169fb52401f9cff9dce4-320.webp": 31906
+  }
+}

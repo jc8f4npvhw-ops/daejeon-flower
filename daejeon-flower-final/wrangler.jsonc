@@ -17,7 +17,9 @@
       "!/*/_next/static/*",
       "!/ocr/*",
       "!/plant-care.html",
-      "!/occasions/*"
+      "!/occasions/*",
+      "!/optimized-media/*",
+      "!/care-assets/*"
     ]
   },
   "d1_databases": [
