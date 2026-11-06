@@ -1,0 +1,13 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {build} from 'esbuild';import {JSDOM} from 'jsdom';
+test('gallery warms only neighbors, keeps the current photo until decoding finishes and ignores stale arrivals',async(t)=>{
+ const bundle=await build({stdin:{contents:`import React,{useState}from'react';import{createRoot}from'react-dom/client';import{usePreparedGallery}from'./src/frontend/prepared-gallery';function App(){const[i,set]=useState(0);const p=usePreparedGallery([{src:'/a.webp'},{src:'/b.webp'},{src:'/c.webp'},{src:'/d.webp'}],i);return <><img src={p.src}/><span>{p.index}</span><button onClick={()=>set(i=>Math.min(i+1,3))}>next</button></>}createRoot(document.getElementById('root')).render(<App/>);`,loader:'tsx',resolveDir:process.cwd()},bundle:true,write:false,format:'iife'});
+ const dom=new JSDOM('<div id="root"></div>',{url:'https://preview.test',runScripts:'outside-only'});t.after(()=>dom.window.close());const w=dom.window,d=w.document,loads=new Map<string,any>(),decodes=new Map<string,()=>void>();
+ (w as any).Image=class {onload:any;onerror:any;decoding='';fetchPriority='';value='';set src(v:string){this.value=v;loads.set(v,this)}decode(){return new Promise<void>(resolve=>decodes.set(this.value,resolve))}};
+ const until=async(check:()=>boolean)=>{const limit=Date.now()+5000;while(!check()&&Date.now()<limit)await new Promise(r=>setTimeout(r,20));assert(check())};
+ const tick=()=>new Promise(r=>setTimeout(r,30));w.eval(bundle.outputFiles[0].text);await until(()=>loads.has('/a.webp')&&loads.has('/b.webp'));assert(!loads.has('/c.webp'),'no whole-album download');
+ loads.get('/a.webp').onload();await until(()=>decodes.has('/a.webp'));decodes.get('/a.webp')!();await tick();assert.equal(d.querySelector('img')?.getAttribute('src'),'/a.webp');
+ d.querySelector('button')!.click();await until(()=>loads.has('/c.webp'));assert.equal(d.querySelector('img')?.getAttribute('src'),'/a.webp','old image stays while fetching');
+ loads.get('/b.webp').onload();await until(()=>decodes.has('/b.webp'));assert.equal(d.querySelector('img')?.getAttribute('src'),'/a.webp','decode must finish before swapping');
+ d.querySelector('button')!.click();await until(()=>loads.has('/d.webp'));loads.get('/c.webp').onload();await until(()=>decodes.has('/c.webp'));decodes.get('/c.webp')!();await until(()=>d.querySelector('img')?.getAttribute('src')==='/c.webp');
+ decodes.get('/b.webp')!();await tick();assert.equal(d.querySelector('img')?.getAttribute('src'),'/c.webp','a slower prior request cannot replace current selection');assert.equal(d.querySelector('span')?.textContent,'2');
+});

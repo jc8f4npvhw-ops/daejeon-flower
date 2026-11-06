@@ -1,0 +1,20 @@
+{
+  "/care-assets/8183f5ded2224db6c135f68d.woff": {
+    "url": "/care-assets/50253e6cc7d23a57b9723d10-guide.woff2",
+    "before_bytes": 964748,
+    "after_bytes": 91544,
+    "characters": 661
+  },
+  "/care-assets/13cb003f4be8719a0501b1e9.woff": {
+    "url": "/care-assets/822cf974c4762a75c33a435e-guide.woff2",
+    "before_bytes": 873128,
+    "after_bytes": 79884,
+    "characters": 661
+  },
+  "/care-assets/fad853f7f47c6c8b103171e7.woff2": {
+    "url": "/care-assets/8b275722ffa70697cdabfa6e-guide.woff2",
+    "before_bytes": 765892,
+    "after_bytes": 61248,
+    "characters": 662
+  }
+}

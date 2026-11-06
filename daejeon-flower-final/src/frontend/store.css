@@ -202,3 +202,5 @@ a,a:visited,button{color:inherit;-webkit-text-fill-color:currentColor}button,a{t
 .kakao-action:focus-visible,a[href^="https://pf.kakao.com/"]:focus-visible{outline:3px solid #675900;outline-offset:3px}
 .kakao-action:disabled{opacity:.6;cursor:not-allowed}.kakao-action *{color:inherit!important}
 .class-inquiry-dialog footer .kakao-action{width:100%;max-width:420px}
+
+.sp-load-status{min-height:22px;font-size:12px;line-height:1.6;color:#62705d;text-align:center;margin:8px 0}.sp-load-status button{background:none;border:0;text-decoration:underline;font:inherit;color:inherit;cursor:pointer}
