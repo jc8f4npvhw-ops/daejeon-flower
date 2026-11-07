@@ -1,4 +1,5 @@
 import {runAnniversaryCoupons} from './lib/server/anniversary-coupons';
+import {cleanupMemberAuth} from './lib/server/kakao-login';
 import {runAnniversaryJobs} from './lib/server/anniversary-reminders';
 import application from 'vinext/server/fetch-handler';
 import { runDeliveryJobs } from './lib/server/delivery-notifications';
@@ -15,6 +16,7 @@ export default {
     return response;
   },
   scheduled(_event: ScheduledController, env: Env, ctx: ExecutionContext) {
+    ctx.waitUntil(cleanupMemberAuth(env).catch(() => console.error('MEMBER_SESSION_CLEANUP_FAILED')));
     ctx.waitUntil(runAnniversaryCoupons(env).catch(() => console.error('ANNIVERSARY_COUPON_JOB_FAILED')));
     ctx.waitUntil(runAnniversaryJobs(env).catch(() => console.error('ANNIVERSARY_JOB_FAILED')));
     ctx.waitUntil(runDeliveryJobs(env).catch(() => console.error('DELIVERY_JOB_FAILED')));

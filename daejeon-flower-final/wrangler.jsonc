@@ -39,6 +39,11 @@
   "triggers": {"crons": ["*/5 * * * *"]},
   "vars": {
     "KAKAO_SENDING_ENABLED": "true",
+    "KAKAO_LOGIN_ENABLED": "true",
+    "KAKAO_LOGIN_TEST_ONLY": "true",
+    "KAKAO_CALENDAR_ENABLED": "false",
+    "KAKAO_FRIENDS_ENABLED": "false",
+    "KAKAO_LOGIN_SCOPES": "",
     "ANNIVERSARY_SENDING_ENABLED": "false",
     "ANNIVERSARY_COUPONS_ENABLED": "false",
     "ANNIVERSARY_LIVE_SEND_ENABLED": "false",

@@ -8,7 +8,7 @@ import {fileURLToPath,pathToFileURL} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const detailColumns={relationship:'TEXT',occasion:'TEXT',memo:"TEXT NOT NULL DEFAULT ''",start_date:'TEXT'};
 export function preparationSql(existingColumns=[]) {
-  const sql=['0007_anniversary_reminders.sql','0008_anniversary_coupons.sql','0009_payment_anniversary_access.sql']
+  const sql=['0007_anniversary_reminders.sql','0008_anniversary_coupons.sql','0009_payment_anniversary_access.sql','0011_kakao_members.sql']
     .map(name=>readFileSync(join(root,'migrations',name),'utf8')).join('\n');
   return sql+'\n'+Object.entries(detailColumns).filter(([name])=>!existingColumns.includes(name))
     .map(([name,type])=>'ALTER TABLE anniversary_reminders ADD COLUMN '+name+' '+type+';').join('\n');
