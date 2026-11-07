@@ -27,7 +27,7 @@ test('owner-only test launch blocks public OAuth even with valid keys',async()=>
 });
 test('callback exchanges code only once, token remains server-side, scopes absent stay optional',async()=>{
  const env=setup(),s=await start(env),original=globalThis.fetch;let calls=0;
- globalThis.fetch=async(input:any,init:any)=>{calls++;const url=String(input);if(url.includes('/oauth/token')){assert.equal(new URLSearchParams(init.body).get('client_secret'),'test-secret');return new Response(JSON.stringify({access_token:'private-token',expires_in:3600}))}assert.equal(init.headers.Authorization,'Bearer private-token');return new Response(JSON.stringify({id:123,kakao_account:{name:'선택 고객',phone_number:'+82 10-1234-5678',birthday:'0209',birthday_type:'SOLAR'}}))};
+ globalThis.fetch=async(input:any,init:any)=>{calls++;assert.equal(init.redirect,'manual');const url=String(input);if(url.includes('/oauth/token')){assert.equal(new URLSearchParams(init.body).get('client_secret'),'test-secret');return new Response(JSON.stringify({access_token:'private-token',expires_in:3600}))}assert.equal(init.headers.Authorization,'Bearer private-token');return new Response(JSON.stringify({id:123,kakao_account:{name:'선택 고객',phone_number:'+82 10-1234-5678',birthday:'0209',birthday_type:'SOLAR'}}))};
  try{const path='/auth/kakao/callback?code=private-code&state='+s.state;const r=await handleApi(req(path,'GET',undefined,s.cookie),env);assert.equal(r.status,303);assert.equal(r.headers.get('location'),'/register');assert.equal((await r.clone().text()).includes('private-token'),false);
  const p=await handleApi(req('/auth/signup','GET',undefined,cookies(r)),env);const b:any=await p.json();assert.deepEqual(b.profile,{name:'선택 고객',phone:'01012345678',birthday:'02-09'});
  assert.equal((await handleApi(req(path,'GET',undefined,s.cookie),env)).status,403);assert.equal(calls,2);
@@ -105,4 +105,9 @@ test('feature OAuth is account-bound; a different Kakao account cannot link a to
  const result=await handleApi(req('/auth/features/connect','POST',{feature:'calendar'},ck,a.csrf),env);assert.equal(result.status,200);const location=(await result.json() as any).url,state=new URL(location).searchParams.get('state');assert.equal(new URL(location).searchParams.get('scope'),'talk_calendar');
  const original=globalThis.fetch;globalThis.fetch=async(input:any)=>new Response(JSON.stringify(String(input).includes('/oauth/token')?{access_token:'private',expires_in:3600}:{id:999}));
  try{const done=await handleApi(req('/auth/kakao/callback?code=x&state='+state,'GET',undefined,cookies(result)),env);assert.equal(done.headers.get('location'),'/account?featureError=1');assert.equal(env.sql.prepare('SELECT COUNT(*) n FROM kakao_feature_tokens').get().n,0)}finally{globalThis.fetch=original;env.sql.close()}
+});
+test('Kakao redirect responses are rejected without following or forwarding credentials',async()=>{
+ const env=setup(),s=await start(env),original=globalThis.fetch;let calls=0;
+ globalThis.fetch=async(_input:any,init:any)=>{calls++;assert.equal(init.redirect,'manual');return new Response(null,{status:302,headers:{Location:'https://other.example'}})};
+ try{const r=await handleApi(req('/auth/kakao/callback?code=x&state='+s.state,'GET',undefined,s.cookie),env);assert.equal(r.headers.get('location'),'/register?error=provider');assert.equal(calls,1);assert.equal(env.sql.prepare('SELECT count(*) n FROM kakao_members').get().n,0)}finally{globalThis.fetch=original;env.sql.close()}
 });

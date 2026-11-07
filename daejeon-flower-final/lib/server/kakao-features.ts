@@ -8,7 +8,7 @@ const hex=(b:Uint8Array)=>Array.from(b,x=>x.toString(16).padStart(2,'0')).join('
 const bytes=(s:string)=>new Uint8Array(s.match(/../g)!.map(x=>parseInt(x,16)));
 export async function seal(env:Env,text:string,context:string){const iv=crypto.getRandomValues(new Uint8Array(12)),data=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode(context)},await key(env),new TextEncoder().encode(text));return hex(iv)+hex(new Uint8Array(data))}
 export async function unseal(env:Env,text:string,context:string){return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes(text.slice(0,24)),additionalData:new TextEncoder().encode(context)},await key(env),bytes(text.slice(24))))}
-async function external(url:string,init:RequestInit){const r=await fetch(url,{...init,redirect:'error',signal:AbortSignal.timeout(15000)});assert(r.ok,502,'카카오 기능을 완료하지 못했습니다. 권한과 연결 상태를 확인해주세요.');return await r.json() as any}
+async function external(url:string,init:RequestInit){const r=await fetch(url,{...init,redirect:'manual',signal:AbortSignal.timeout(15000)});assert(r.ok,502,'카카오 기능을 완료하지 못했습니다. 권한과 연결 상태를 확인해주세요.');return await r.json() as any}
 function back(error=false){return new Response(null,{status:303,headers:{Location:'/account'+(error?'?featureError=1':''),'Cache-Control':'no-store','Referrer-Policy':'no-referrer','Set-Cookie':'__Host-dfds_kakao_state=; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=0'}})}
 export async function finishFeature(req:Request,env:Env,state:string){
  const row:any=await env.DB.prepare('SELECT * FROM kakao_feature_states WHERE state_hash=? AND consumed=0 AND expires_at>CURRENT_TIMESTAMP').bind(await hash(state)).first();assert(row&&allowed(env,row.feature),403,'추가 기능 연결 요청을 다시 시작해주세요.');
