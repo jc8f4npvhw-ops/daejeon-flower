@@ -1,5 +1,5 @@
-import {DateInput} from './korean-calendar';
 'use client';
+import {DateInput} from './korean-calendar';
 import React,{useLayoutEffect,useRef} from 'react';
 export function phoneDigits(value:string){let digits=value.replace(/\D/g,'');if(/^\s*\+82/.test(value)){digits=digits.slice(2);if(!digits.startsWith('0'))digits='0'+digits}return digits.slice(0,11)}
 export function formatPhone(value:string){const d=phoneDigits(value);if(!d)return '';const first=d.startsWith('02')?2:3;const middle=d.startsWith('010')?4:d.startsWith('02')?(d.length>9?4:3):(d.length>10?4:3);if(d.length<first)return d;let result=d.slice(0,first)+'-';const rest=d.slice(first);if(rest.length<middle)return result+rest;return result+rest.slice(0,middle)+'-'+rest.slice(middle)}
