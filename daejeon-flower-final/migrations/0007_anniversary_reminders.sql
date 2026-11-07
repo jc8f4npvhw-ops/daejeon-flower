@@ -1,0 +1,11 @@
+-- Additive only. Legacy anniversaries never acquire consent automatically.
+CREATE TABLE IF NOT EXISTS anniversary_reminder_preferences(customer_id INTEGER PRIMARY KEY REFERENCES customers(id),marketing INTEGER NOT NULL DEFAULT 0,channel_friend INTEGER NOT NULL DEFAULT 0,revision INTEGER NOT NULL DEFAULT 1,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS anniversary_reminders(id TEXT PRIMARY KEY,customer_id INTEGER NOT NULL REFERENCES customers(id),label TEXT NOT NULL,month INTEGER NOT NULL CHECK(month BETWEEN 1 AND 12),day INTEGER NOT NULL CHECK(day BETWEEN 1 AND 31),notify INTEGER NOT NULL DEFAULT 0,revision INTEGER NOT NULL DEFAULT 1,deleted INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX IF NOT EXISTS anniversary_reminders_customer ON anniversary_reminders(customer_id,deleted);
+CREATE TABLE IF NOT EXISTS anniversary_reminder_consents(id INTEGER PRIMARY KEY AUTOINCREMENT,customer_id INTEGER NOT NULL,marketing INTEGER NOT NULL,channel_friend INTEGER NOT NULL,policy_version TEXT NOT NULL,recorded_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS anniversary_reminder_grants(token_hash TEXT PRIMARY KEY,customer_id INTEGER NOT NULL,expires_at TEXT NOT NULL,consumed INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS anniversary_reminder_sessions(token_hash TEXT PRIMARY KEY,customer_id INTEGER NOT NULL,expires_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS anniversary_reminder_settings(id INTEGER PRIMARY KEY CHECK(id=1),enabled INTEGER NOT NULL DEFAULT 0,last_checked_at TEXT);
+INSERT OR IGNORE INTO anniversary_reminder_settings(id,enabled) VALUES(1,0);
+CREATE TABLE IF NOT EXISTS anniversary_reminder_outbox(id TEXT PRIMARY KEY,anniversary_id TEXT NOT NULL,customer_id INTEGER NOT NULL,occurrence_year INTEGER NOT NULL,due_date TEXT NOT NULL,revision INTEGER NOT NULL,consent_revision INTEGER NOT NULL,phone TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'PENDING',failure_code TEXT,attempts INTEGER NOT NULL DEFAULT 0,provider_group_id TEXT,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,UNIQUE(anniversary_id,occurrence_year));
+CREATE INDEX IF NOT EXISTS anniversary_reminder_due ON anniversary_reminder_outbox(due_date,status);

@@ -1,3 +1,5 @@
+import {runAnniversaryCoupons} from './lib/server/anniversary-coupons';
+import {runAnniversaryJobs} from './lib/server/anniversary-reminders';
 import application from 'vinext/server/fetch-handler';
 import { runDeliveryJobs } from './lib/server/delivery-notifications';
 import type { Env } from './lib/server/types';
@@ -13,6 +15,8 @@ export default {
     return response;
   },
   scheduled(_event: ScheduledController, env: Env, ctx: ExecutionContext) {
+    ctx.waitUntil(runAnniversaryCoupons(env).catch(() => console.error('ANNIVERSARY_COUPON_JOB_FAILED')));
+    ctx.waitUntil(runAnniversaryJobs(env).catch(() => console.error('ANNIVERSARY_JOB_FAILED')));
     ctx.waitUntil(runDeliveryJobs(env).catch(() => console.error('DELIVERY_JOB_FAILED')));
   }
 };

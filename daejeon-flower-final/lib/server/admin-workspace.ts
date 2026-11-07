@@ -18,7 +18,7 @@ export async function adminWorkspace(req:Request,env:Env,path:string):Promise<Re
   assert(/^\d{4}-(0[1-9]|1[0-2])$/.test(month),400,'조회 월을 확인해주세요.');
   const queries=[
    'SELECT COUNT(*) total FROM customers',
-   'SELECT a.*,c.name customer_name FROM anniversaries a JOIN customers c ON c.id=a.customer_id ORDER BY a.month,a.day LIMIT 1000',
+   "SELECT a.id,a.customer_id,a.occasion_type,a.month,a.day,a.notify_enabled,c.name customer_name FROM anniversaries a JOIN customers c ON c.id=a.customer_id UNION ALL SELECT a.id,a.customer_id,a.label,a.month,a.day,a.notify,c.name FROM anniversary_reminders a JOIN customers c ON c.id=a.customer_id WHERE a.deleted=0 ORDER BY month,day LIMIT 1000",
    'SELECT id,order_id,customer_id,notification_type,channel,status,failure_reason,sent_at,created_at FROM notifications ORDER BY id DESC LIMIT 200',
    'SELECT closure_date,is_closed,reason FROM store_closures ORDER BY closure_date',
    "SELECT o.id,o.order_no,o.orderer_name customer_name,o.fulfillment_at,o.fulfillment_type,o.status,o.payment_status,o.total_krw,(SELECT group_concat(product_name_snapshot,', ') FROM order_items WHERE order_id=o.id) product_name FROM orders o WHERE o.fulfillment_at>=? AND o.fulfillment_at<datetime(?,'+1 month') ORDER BY o.fulfillment_at LIMIT 1000",

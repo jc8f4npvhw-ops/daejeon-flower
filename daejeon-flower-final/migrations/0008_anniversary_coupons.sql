@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS anniversary_coupon_settings(id INTEGER PRIMARY KEY CHECK(id=1),enabled INTEGER NOT NULL DEFAULT 0,valid_days_after INTEGER NOT NULL DEFAULT 7 CHECK(valid_days_after BETWEEN 0 AND 30));
+INSERT OR IGNORE INTO anniversary_coupon_settings(id,enabled,valid_days_after) VALUES(1,0,7);
+CREATE TABLE IF NOT EXISTS anniversary_coupons(id TEXT PRIMARY KEY,customer_id INTEGER NOT NULL REFERENCES customers(id),anniversary_id TEXT NOT NULL,label TEXT NOT NULL,occurrence_year INTEGER NOT NULL,occurrence_date TEXT NOT NULL,issued_date TEXT NOT NULL,expires_date TEXT NOT NULL,amount INTEGER NOT NULL DEFAULT 2000 CHECK(amount=2000),UNIQUE(anniversary_id,occurrence_year),UNIQUE(customer_id,occurrence_date));
+CREATE INDEX IF NOT EXISTS anniversary_coupons_customer ON anniversary_coupons(customer_id,expires_date);
+CREATE TABLE IF NOT EXISTS anniversary_coupon_redemptions(order_no TEXT PRIMARY KEY,coupon_id TEXT NOT NULL REFERENCES anniversary_coupons(id),customer_id INTEGER NOT NULL,discount INTEGER NOT NULL CHECK(discount=2000),status TEXT NOT NULL DEFAULT 'RESERVED' CHECK(status IN ('RESERVED','VERIFYING','USED','RELEASED')),updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE UNIQUE INDEX IF NOT EXISTS anniversary_coupon_single_use ON anniversary_coupon_redemptions(coupon_id) WHERE status IN ('RESERVED','VERIFYING','USED');
+CREATE TRIGGER IF NOT EXISTS anniversary_coupon_validate BEFORE INSERT ON anniversary_coupon_redemptions BEGIN
+ SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM anniversary_coupons c JOIN anniversary_coupon_settings s ON s.id=1 WHERE c.id=NEW.coupon_id AND c.customer_id=NEW.customer_id AND c.amount=NEW.discount AND c.issued_date<=date('now','+9 hours') AND c.expires_date>=date('now','+9 hours') AND s.enabled=1) THEN RAISE(ABORT,'COUPON_UNAVAILABLE') END;
+END;

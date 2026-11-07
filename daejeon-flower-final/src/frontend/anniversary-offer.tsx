@@ -1,3 +1,4 @@
+import {AnniversaryBenefit} from './anniversary-benefit';
 import React from 'react';
 
 export function ReminderExample({name='엄마 생신',date='10월 22일',memo='',gift='분홍빛 꽃다발 · 예산 5만원',onGift,onShop}:{
@@ -11,11 +12,12 @@ export function ReminderExample({name='엄마 생신',date='10월 22일',memo=''
  </section>;
 }
 
-export function AnniversaryOffer({onStart,onDismiss}: {onStart:()=>void;onDismiss:()=>void}){
+export function AnniversaryOffer({onStart,onDismiss,couponPreview=false}: {onStart:()=>void;onDismiss:()=>void;couponPreview?:boolean}){
  return <section className="mp-anniversary-offer">
   <span className="mp-eyebrow">A DAY TO REMEMBER</span>
   <h2>다음에도 이 날을<br/>챙겨드릴까요?</h2>
   <p>소중한 날짜 하나만 남겨주세요.<br/>원하시면 3일 전 카카오 알림도 신청할 수 있어요.</p>
+  <AnniversaryBenefit preview={couponPreview}/>
   <ReminderExample/>
   <button className="mp-btn" onClick={onStart}>기억할 날짜 하나 남기기</button>
   <button className="mp-link" onClick={onDismiss}>지금은 괜찮아요</button>

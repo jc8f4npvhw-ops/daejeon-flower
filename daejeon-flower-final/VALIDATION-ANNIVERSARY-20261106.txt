@@ -1,0 +1,99 @@
+TypeScript: PASS
+Cloudflare/Vinext build: PASS
+No real Kakao messages sent.
+✔ reservations open details, closures use a separate confirmed switch, category products reach customer catalog (3656.579192ms)
+✔ 400 customers use ten rows per page and viewport detail; cancelled note confirmation does not write (5798.353518ms)
+✔ remembered admin sessions last 30 days in DB and cookie; ordinary sessions last 8 hours; logout and expiry revoke access (122.24325ms)
+✔ login options save only the username locally and request browser password storage only after successful login (376.530003ms)
+✔ admin photos paginate 25 newest first and reset for a new category (349.385545ms)
+✔ October examples cover every day with 62 orders, sorted by pickup/delivery time (10.452888ms)
+✔ completion requires confirmation; printing contains only the selected order (1499.240585ms)
+✔ today filter uses Korea midnight and excludes other days or missing dates (0.615645ms)
+✔ admin preview navigates all modules, edits guidebook and reflects it in customer book (4084.773294ms)
+✔ admin workspace enforces role boundaries, stores notes, blocks closed days and revokes staff sessions (175.741956ms)
+✔ all customers are searchable beyond 500 and counted, with ten records per server page (63.696006ms)
+✔ customer registration exchanges private fragment once, separates two consents and saves an explicit reminder (736.616102ms)
+✔ Korean dates and D-3 cross years; Feb 29 is observed on Feb 28 only in non-leap years (1.846154ms)
+✔ customer links are one-use, scoped and CSRF protected; consent is separate, validated and revocable (35.551707ms)
+✔ one scheduled brand request per occurrence even with concurrent runs; accepted differs from delivered (10.068982ms)
+✔ master off, before 10, missing consent, wrong test phone and deleted reminders never send (6.459222ms)
+✔ network ambiguity is never resent, even if date or consent is changed afterwards (7.818099ms)
+✔ admin ranges span year-end and explicit enable requires configured provider; drivers have no access (9.166886ms)
+✔ scheduled selection handles new year and leap-day occurrences without generating a March birthday (20.423983ms)
+✔ withdrawal just before claim is rechecked atomically; legacy anniversary registrations are not consent (6.500839ms)
+✔ flower M choices stay first and second while other SKUs follow actual sales (1.484131ms)
+✔ public sales exclude unpaid, cancelled, refunded and old orders and reveal no customer data (14.375573ms)
+✔ new products retain selected category and styles in D1; reservation detail retains classification snapshot (123.154384ms)
+✔ class inquiry previews in parent viewport, copies before chat, restores scroll and guards messages (660.725621ms)
+✔ wreath public release upgrades old snapshot without changing unrelated settings; future admin choice is retained (1.037028ms)
+✔ upload then complete atomically queues one opted-in orderer event; disabled consent and transaction failures never queue (78.435812ms)
+✔ concurrent dispatch sends once with HMAC and approved variables; acceptance is separate from delivery; private photos remain order-bound (65.869021ms)
+✔ network ambiguity is never automatically or manually resent; test whitelist and disabled sending block external calls (45.199325ms)
+✔ explicit provider rejection can retry after confirmation; reopened/expired orders cancel before send; photo grants expire (48.280085ms)
+✔ customer delivery page exchanges the fragment once under StrictMode and renders photos without exposing token links (288.340962ms)
+✔ delivery completion keeps photo visible, one-click ON/OFF saves exact SKU and reaches customer gallery (2122.424721ms)
+✔ completed photos enter private admin inbox with exact SKU; drafts remain private and approved copies publish without changing originals (142.286845ms)
+✔ published plant galleries match exact variety/budget/size and exclude unapproved photos (0.833903ms)
+✔ delivery unknown stays unconfirmed; explicit zero and nonzero surcharges are distinct (22.207052ms)
+✔ free categories persist three levels in existing D1, classify products, block hidden ancestors and retain snapshots (134.555482ms)
+✔ two explicit category levels add at the selected parent, retain sizes, guide empty roots and reach customer catalog (4428.180919ms)
+✔ admin edits persist and reach customer; closed menus and consultation routes (31346.071546ms)
+✔ both bestseller rows open the selected SKU; monthly orchid editor and customer slot are reachable (2698.327186ms)
+✔ store channel upgrade fills old blank settings once and preserves explicit subsequent edits (0.689096ms)
+✔ consultation opens chat while channel additions open channel home; malformed links never become channel links (0.829907ms)
+✔ anniversary dates: D-3 crosses year; leap day handled without shifting to March (0.904539ms)
+✔ member preview: profile validation, orders, anniversary CRUD and optional reminder (3669.34225ms)
+✔ capture reads automatically, requires review before applying, preserves blanks and rejects stale responses (891.853837ms)
+✔ free endpoint rejects capture uploads and never invokes a paid provider (18.260071ms)
+✔ HTTPS allowlist and redirect checks survive without a paid fallback (9.276781ms)
+✔ link requests remain rate limited (15.835637ms)
+✔ known notice layouts preserve named fields and flag past departures without importing unrelated contact data (5.343441ms)
+✔ ceremony time comes from the displayed time, never the timestamp; conflicting calendar dates remain blank (1.631011ms)
+✔ recognized links work without an AI key and never call the AI provider (14.93957ms)
+✔ free OCR text separates departure and ceremony without guessing missing year or AM/PM (3.897567ms)
+✔ policy defaults preserve admin text and unconfirmed notices block real order intake (37.19107ms)
+✔ alert dialog, volume, mute, explicit acknowledgement and connection failures keep distinct states (3588.200759ms)
+✔ paid alerts survive refresh, cross-admin acknowledgement is idempotent and unpaid/cancelled/completed orders never alert (99.268013ms)
+✔ completed pickup and delivery can reopen without financial/photo changes, with role, audit and version checks (79.50936ms)
+✔ four orchid variants retain old references, honor admin choices and checkout with correct variety/price (36.178208ms)
+✔ small product previews have responsive derivatives; unknown uploads retain their source; expanded photos have priority (12.369148ms)
+✔ entry request and CMS share one public snapshot; future loads fetch current data, including after failures (4.410558ms)
+✔ externalized care guide retains nine plants, direct entry, all four tabs and water dialog (478.145976ms)
+✔ gallery warms only neighbors, keeps the current photo until decoding finishes and ignores stale arrivals (305.837025ms)
+✔ admin registers an amount, customer enters checkout in one click, edits and hiding stay in sync without card charges (5610.018336ms)
+✔ private payment UI amounts persist through authenticated content API and reject invalid prices without creating orders (250.186717ms)
+✔ past reservation times follow Korea midnight, independently of browser timezone (1.28401ms)
+✔ pickup and delivery calendars disable past slots, clear elapsed selection on resume and enable tomorrow slots (863.974805ms)
+✔ existing D1 structure upgrade preserves all business rows and can be applied twice (11.130216ms)
+✔ combined preparation includes delivery tables without changing existing customer or catalog data (3.513751ms)
+✔ D1 schema retained; authenticated CMS and server-authoritative checkout (133.976676ms)
+✔ failed logins throttled, no default credentials (90.840543ms)
+✔ delivery fee quote is confirmed by admin before checkout (41.343769ms)
+✔ style/size thumbnails open only the matching photos, support navigation and never choose an order size (1563.447878ms)
+✔ representatives stay ahead of approved recent photos, with exact product/style/size and deduplication (2.032104ms)
+✔ connection check only reads balance and never exposes secrets or provider body (11.095855ms)
+✔ SOLAPI GET and POST requests construct successfully in the Workers runtime without external sends (3171.491652ms)
+✔ step entrance waits for viewport, keeps layout and supports reduced motion; scroll skips hidden retained routes (311.315544ms)
+Today catalog test orders: 28
+✔ today test orders cover every visible product family and preserve saved photos, completion and unique IDs (4.12532ms)
+✔ wreath direct checkout keeps ribbon, notice and server fee; capture stays private in R2 (63.37587ms)
+✔ approved wreath and proposal photos appear on actual customer pages and narrow to selected configurations (2217.860955ms)
+ℹ tests 76
+ℹ suites 0
+ℹ pass 76
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 38892.296299
+
+Final customer date selector check:
+✔ customer registration exchanges private fragment once, separates two consents and saves an explicit reminder (691.930931ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1226.994361
