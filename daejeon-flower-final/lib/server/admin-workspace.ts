@@ -32,21 +32,21 @@ export async function adminWorkspace(req:Request,env:Env,path:string):Promise<Re
  if(path==='/admin/customers'&&req.method==='GET'){
   await admin(req,env);const url=new URL(req.url),query=(url.searchParams.get('q')||'').trim().replace(/[\s-]/g,'');const raw=url.searchParams.get('page')||'1';
   assert(query.length<=100&&/^[1-9]\d{0,8}$/.test(raw),400,'검색어 또는 페이지를 확인해주세요.');
-  const where=" WHERE instr(lower(replace(replace(COALESCE(c.name,''),' ',''),'-','')),lower(?))>0 OR instr(replace(replace(COALESCE(c.phone_normalized,''),' ',''),'-',''),?)>0";
+  const where=" WHERE instr(lower(replace(replace(COALESCE(c.name,''),' ',''),'-','')),lower(?))>0 OR instr(replace(replace(COALESCE(c.phone_normalized,(SELECT contact_phone FROM kakao_members WHERE customer_id=c.id),''),' ',''),'-',''),?)>0";
   const count:any=await env.DB.prepare('SELECT COUNT(*) total FROM customers c'+where).bind(query,query).first();
   const total=Number(count.total),pages=Math.max(1,Math.ceil(total/10)),page=Math.min(Number(raw),pages);
-  const rows=await env.DB.prepare("SELECT c.id,c.name,c.phone_normalized,c.email,c.created_at,c.kakao_user_id IS NOT NULL kakao_linked,(SELECT COUNT(*) FROM orders o WHERE o.customer_id=c.id) order_count,(SELECT COALESCE(SUM(CASE WHEN o.payment_status IN ('PAID','PARTIAL_REFUND') THEN o.total_krw ELSE 0 END),0) FROM orders o WHERE o.customer_id=c.id) paid_total FROM customers c"+where+' ORDER BY c.id DESC LIMIT 10 OFFSET ?').bind(query,query,(page-1)*10).all();
+  const rows=await env.DB.prepare("SELECT c.id,c.name,c.phone_normalized,c.email,c.created_at,(c.kakao_user_id IS NOT NULL OR EXISTS(SELECT 1 FROM kakao_members WHERE customer_id=c.id)) kakao_linked, (SELECT contact_phone FROM kakao_members WHERE customer_id=c.id) contact_phone,(SELECT COUNT(*) FROM orders o WHERE o.customer_id=c.id) order_count,(SELECT COALESCE(SUM(CASE WHEN o.payment_status IN ('PAID','PARTIAL_REFUND') THEN o.total_krw ELSE 0 END),0) FROM orders o WHERE o.customer_id=c.id) paid_total FROM customers c"+where+' ORDER BY c.id DESC LIMIT 10 OFFSET ?').bind(query,query,(page-1)*10).all();
   return json({customers:rows.results,total,page,pages,pageSize:10});
  }
  let match=path.match(/^\/admin\/customers\/(\d+)$/);
  if(match&&req.method==='GET'){
   await admin(req,env);const id=Number(match[1]);
-  const customer=await env.DB.prepare('SELECT id,name,phone_normalized,email,created_at,kakao_user_id IS NOT NULL kakao_linked FROM customers WHERE id=?').bind(id).first();assert(customer,404,'고객을 찾지 못했습니다.');
+  const customer:any=await env.DB.prepare('SELECT c.id,c.name,c.phone_normalized,c.email,c.created_at,(c.kakao_user_id IS NOT NULL OR m.customer_id IS NOT NULL) kakao_linked,m.contact_phone,m.birthday,m.phone_verified,m.terms_version,m.created_at member_created_at FROM customers c LEFT JOIN kakao_members m ON m.customer_id=c.id WHERE c.id=?').bind(id).first();assert(customer,404,'고객을 찾지 못했습니다.');
   const [notes,orders,consents]=await Promise.all([
    env.DB.prepare('SELECT note,updated_at FROM customer_admin_notes WHERE customer_id=?').bind(id).first(),
    env.DB.prepare('SELECT order_no,status,payment_status,total_krw,fulfillment_at,created_at FROM orders WHERE customer_id=? ORDER BY id DESC LIMIT 100').bind(id).all(),
    env.DB.prepare('SELECT oc.consent_type,oc.is_agreed,oc.policy_version,oc.agreed_at,o.order_no FROM order_consents oc JOIN orders o ON o.id=oc.order_id WHERE o.customer_id=? ORDER BY oc.id DESC LIMIT 100').bind(id).all()
-  ]);return json({customer,notes,orders:orders.results,consents:consents.results});
+  ]);const preferences=await env.DB.prepare('SELECT marketing,channel_friend,updated_at FROM anniversary_reminder_preferences WHERE customer_id=?').bind(id).first();const reminderConsents=await env.DB.prepare('SELECT marketing,channel_friend,policy_version,recorded_at FROM anniversary_reminder_consents WHERE customer_id=? ORDER BY id DESC LIMIT 100').bind(id).all<any>();const memberConsents=customer.terms_version?[{consent_type:'회원 약관·개인정보 동의',is_agreed:1,policy_version:customer.terms_version,agreed_at:customer.member_created_at}]:[];return json({customer,preferences,notes,orders:orders.results,consents:[...memberConsents,...reminderConsents.results.flatMap(c=>[{consent_type:'기념일 광고 알림 수신',is_agreed:c.marketing,policy_version:c.policy_version,agreed_at:c.recorded_at},{consent_type:'카카오 채널 친구 본인 확인',is_agreed:c.channel_friend,policy_version:c.policy_version,agreed_at:c.recorded_at}]),...consents.results]});
  }
  if(match&&req.method==='PATCH'){
   const u=await admin(req,env);const b=await body(req,8192),id=Number(match[1]);assert(typeof b.note==='string'&&b.note.length<=2000,400,'고객 메모는 2,000자 이하로 입력해주세요.');
@@ -64,7 +64,7 @@ export async function adminWorkspace(req:Request,env:Env,path:string):Promise<Re
   const u=await admin(req,env,['OWNER']),b=await body(req,4096);
   assert(typeof b.username==='string'&&/^[A-Za-z0-9_.@-]{3,80}$/.test(b.username),400,'아이디는 영문·숫자 3~80자로 입력해주세요.');
   assert(typeof b.displayName==='string'&&b.displayName.trim()&&b.displayName.length<=50&&['OWNER','MANAGER','DRIVER'].includes(b.role),400,'표시 이름과 권한을 확인해주세요.');
-  assert(typeof b.password==='string'&&b.password.length>=12&&b.password.length<=128,400,'비밀번호는 12~128자로 입력해주세요.');
+  assert(typeof b.password==='string'&&b.password.length>=8&&b.password.length<=128,400,'비밀번호는 8~128자로 입력해주세요.');
   assert(!await env.DB.prepare('SELECT id FROM admin_users WHERE username=?').bind(b.username).first(),409,'이미 사용 중인 아이디입니다.');
   await env.DB.batch([env.DB.prepare('INSERT INTO admin_users(username,password_hash,display_name,role) VALUES(?,?,?,?)').bind(b.username,await passwordHash(b.password),b.displayName.trim(),b.role),audit(env,u,'관리자 계정 추가','staff',b.username)]);return json({ok:true},201);
  }
@@ -75,7 +75,7 @@ export async function adminWorkspace(req:Request,env:Env,path:string):Promise<Re
   assert(id!==u.id||b.role==='OWNER'&&b.active,400,'본인의 운영자 권한을 해제할 수 없습니다.');
   assert(await env.DB.prepare('SELECT id FROM admin_users WHERE id=?').bind(id).first(),404,'관리자를 찾지 못했습니다.');
   const statements=[env.DB.prepare('UPDATE admin_users SET role=?,is_active=?,updated_at=CURRENT_TIMESTAMP WHERE id=?').bind(b.role,b.active?1:0,id)];
-  if(b.password){assert(typeof b.password==='string'&&b.password.length>=12&&b.password.length<=128,400,'비밀번호는 12~128자로 입력해주세요.');if(id===u.id){const own:any=await env.DB.prepare('SELECT password_hash FROM admin_users WHERE id=?').bind(id).first();assert(typeof b.currentPassword==='string'&&await verifyPassword(b.currentPassword,own.password_hash),400,'현재 비밀번호를 확인해주세요.');}statements.push(env.DB.prepare('UPDATE admin_users SET password_hash=? WHERE id=?').bind(await passwordHash(b.password),id));}
+  if(b.password){assert(typeof b.password==='string'&&b.password.length>=8&&b.password.length<=128,400,'비밀번호는 8~128자로 입력해주세요.');if(id===u.id){const own:any=await env.DB.prepare('SELECT password_hash FROM admin_users WHERE id=?').bind(id).first();assert(typeof b.currentPassword==='string'&&await verifyPassword(b.currentPassword,own.password_hash),400,'현재 비밀번호를 확인해주세요.');}statements.push(env.DB.prepare('UPDATE admin_users SET password_hash=? WHERE id=?').bind(await passwordHash(b.password),id));}
   statements.push(env.DB.prepare('DELETE FROM admin_sessions WHERE admin_user_id=?').bind(id),audit(env,u,'관리자 권한·상태 변경','staff',id));await env.DB.batch(statements);return json({ok:true});
  }
  return null;

@@ -1,9 +1,10 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
 import {build} from 'esbuild';import {JSDOM,VirtualConsole} from 'jsdom';import {IDBFactory} from 'fake-indexeddb';
-test('admin preview navigates all modules, edits guidebook and reflects it in customer book',async()=>{
+test('admin preview navigates all modules, edits guidebook and reflects it in customer book',async(t)=>{
  const bundle=await build({stdin:{contents:"import {mount} from './src/frontend/redesign';mount(document.getElementById('root'));",resolveDir:process.cwd(),loader:'tsx'},bundle:true,write:false,format:'iife',target:'es2022'});
  const errors:string[]=[];const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
  const dom=new JSDOM('<div id="root"></div>',{url:'https://preview.example/#admin',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
+ t.after(()=>dom.window.close());
  const w=dom.window,d=w.document;Object.defineProperty(w,'indexedDB',{value:new IDBFactory()});w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.matchMedia=(()=>({matches:false})) as any;w.confirm=()=>true;
  const wait=()=>new Promise(r=>setTimeout(r,100));w.eval(bundle.outputFiles[0].text);await wait();
  const click=async(text:string)=>{const el=[...d.querySelectorAll('button')].find(e=>e.textContent?.trim()===text) as HTMLButtonElement;assert(el,text);assert(!el.disabled,text);el.click();await wait()};

@@ -36,7 +36,11 @@
       "bucket_name": "daejeon-flower-media"
     }
   ],
-  "triggers": {"crons": ["*/5 * * * *"]},
+  "triggers": {
+    "crons": [
+      "*/5 * * * *"
+    ]
+  },
   "vars": {
     "KAKAO_SENDING_ENABLED": "true",
     "KAKAO_LOGIN_ENABLED": "true",
@@ -44,15 +48,16 @@
     "KAKAO_CALENDAR_ENABLED": "false",
     "KAKAO_FRIENDS_ENABLED": "false",
     "KAKAO_LOGIN_SCOPES": "",
-    "ANNIVERSARY_SENDING_ENABLED": "false",
-    "ANNIVERSARY_COUPONS_ENABLED": "false",
+    "ANNIVERSARY_SENDING_ENABLED": "true",
+    "ANNIVERSARY_COUPONS_ENABLED": "true",
     "ANNIVERSARY_LIVE_SEND_ENABLED": "false",
     "KAKAO_LIVE_SEND_ENABLED": "false",
     "SOLAPI_CHANNEL_ID": "KA01PF261020165851146fAw6zXfI0v7",
     "SOLAPI_DELIVERY_TEMPLATE_ID": "KA01TP2610201709032423Gh5ro5fvey",
     "PAYMENTS_ENABLED": "false",
     "NOTICE_READER_ENABLED": "true",
-    "NOTICE_ALLOWED_HOSTS": "samga.co.kr,letterb.barunsoncard.com"
+    "NOTICE_ALLOWED_HOSTS": "samga.co.kr,letterb.barunsoncard.com",
+    "SOLAPI_ANNIVERSARY_TEMPLATE_ID": "KA01BP261107105715297M4itaQpFcQo"
   },
   "observability": {
     "enabled": false

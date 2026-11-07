@@ -1,4 +1,6 @@
+import {DateInput} from './korean-calendar';
 "use client";
+import {PhoneInput} from './phone-input';
 import React,{useEffect,useState} from 'react';
 import {MemberOrders} from './member-orders';
 import {KakaoExtras} from './kakao-extras';
@@ -20,8 +22,8 @@ export function MemberAccess({account=false}:{account?:boolean}){
  <p className="df-intro">{member?'내 기념일과 쿠폰을 한곳에서 확인하세요.':pending?'필요한 정보만 남겨주세요. 선택 항목을 비워도 가입할 수 있어요.':'카카오로 간편하게 시작하고, 다음 선물할 날을 편하게 준비하세요.'}</p>
  {error&&<p className="df-error" role="alert">{error}</p>}{loading?<p role="status">로그인 상태를 확인하고 있어요.</p>:member?<><section className="df-card"><h2>{member.name||'고객'}님</h2><p>연락처 {member.phone||'등록하지 않음'}<br/>생일 {member.birthday||'등록하지 않음'}</p>{!member.reminderPhoneReady&&<p>기념일은 저장할 수 있습니다.<br/>알림을 받으려면 매장에서 연락처를 확인해주세요.</p>}<button className="df-outline" onClick={logout} disabled={busy}>로그아웃</button></section><MemberOrders/><KakaoExtras/><LiveAnniversaries close={()=>location.assign('/')}/></>:pending?<form className="df-card" onSubmit={join}>
  <label>이름 <small>선택</small><input autoComplete="name" value={name} maxLength={50} placeholder="성함을 입력해주세요" onChange={e=>setName(e.target.value)}/></label>
- <label>전화번호 <small>선택</small><input autoComplete="tel" type="tel" inputMode="tel" value={phone} maxLength={16} placeholder="010-0000-0000" onChange={e=>setPhone(e.target.value)}/><span className="df-help">주문 시 연락처 입력에 활용합니다.<br/>직접 입력한 번호는 본인 인증된 번호로 취급하지 않습니다.</span></label>
- <label>생일 <small>선택 · 양력</small></label><div className="df-date"><select aria-label="생일 월" value={month} onChange={e=>{setMonth(e.target.value);setDay('')}}><option value="">월 선택</option>{Array.from({length:12},(_,i)=><option key={i} value={String(i+1).padStart(2,'0')}>{i+1}월</option>)}</select><select aria-label="생일 일" value={day} onChange={e=>setDay(e.target.value)} disabled={!month}><option value="">일 선택</option>{Array.from({length:days},(_,i)=><option key={i} value={String(i+1).padStart(2,'0')}>{i+1}일</option>)}</select><button type="button" className="df-link" onClick={()=>{setMonth('');setDay('')}}>지우기</button></div>
+ <label>전화번호 <small>선택</small><PhoneInput autoComplete="tel" type="tel" inputMode="numeric" value={phone} maxLength={16} placeholder="010-0000-0000" onChange={e=>setPhone(e.target.value)}/><span className="df-help">주문 시 연락처 입력에 활용합니다.<br/>직접 입력한 번호는 본인 인증된 번호로 취급하지 않습니다.</span></label>
+ <label>생일 <small>선택 · 양력</small></label><DateInput aria-label="생일 선택" recurring value={month&&day?`2000-${month}-${day}`:''} onChange={e=>{setMonth(e.target.value.slice(5,7));setDay(e.target.value.slice(8,10))}}/>
  <p className="df-help">생일 저장이 기념일 알림 신청을 뜻하지는 않습니다.<br/>가입 후 원하는 기념일과 수신 여부를 직접 선택하세요.</p>
  <div className="df-consents"><label><input type="checkbox" checked={terms} onChange={e=>setTerms(e.target.checked)}/><span>[필수] <a href="/terms" target="_blank" rel="noreferrer">서비스 이용약관</a>에 동의합니다.</span></label><label><input type="checkbox" checked={privacy} onChange={e=>setPrivacy(e.target.checked)}/><span>[필수] 회원정보 수집·이용 안내를 확인하고 동의합니다.</span></label></div>
  <details open><summary>회원정보 수집·이용 안내</summary><p>필수: 카카오 회원 식별번호, 약관 동의 이력.<br/>선택: 이름, 전화번호, 생일(월·일).<br/>목적: 회원 식별 및 로그인 유지, 주문 입력 편의, 기념일 등록 편의.<br/>보유기간: 회원 탈퇴 시까지. 법령에 따른 거래 기록은 별도 보관합니다.</p><p>선택 정보를 제공하지 않아도 가입할 수 있습니다.<br/>탈퇴·정보 삭제 요청은 개인정보처리방침의 매장 연락처로 문의해주세요.</p><a href="/privacy" target="_blank" rel="noreferrer">개인정보처리방침 전체 보기 →</a></details>

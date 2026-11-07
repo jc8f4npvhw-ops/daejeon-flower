@@ -12,6 +12,18 @@ export function noticeDate(date:string){return new Date(Date.parse(date+'T00:00:
 export function nextReminder(month:number,day:number,today=koreanDate()){let year=Number(today.slice(0,4));let date=occurrence(month,day,year);if(date<today)date=occurrence(month,day,++year);return {date,notice:noticeDate(date),year}}
 function configured(env:Env){return env.ANNIVERSARY_SENDING_ENABLED==='true'&&env.KAKAO_SENDING_ENABLED==='true'&&!!env.SOLAPI_ANNIVERSARY_TEMPLATE_ID&&!!env.SOLAPI_CHANNEL_ID&&!!env.SOLAPI_API_KEY&&!!env.SOLAPI_API_SECRET&&!!configuredOrigin(env)&&env.SESSION_SECRET?.length>=32}
 function mode(env:Env){return {ready:!!configured(env),live:env.ANNIVERSARY_LIVE_SEND_ENABLED==='true',templateConfigured:!!env.SOLAPI_ANNIVERSARY_TEMPLATE_ID,testPhoneConfigured:!!normalizePhone(env.KAKAO_TEST_PHONE||'')}}
+export function anniversarySetup(env:Env){return [
+ {key:'ANNIVERSARY_COUPONS_ENABLED',label:'쿠폰 서버 기능',ok:env.ANNIVERSARY_COUPONS_ENABLED==='true',action:'Cloudflare 텍스트 변수 ANNIVERSARY_COUPONS_ENABLED = true'},
+ {key:'ANNIVERSARY_SENDING_ENABLED',label:'기념일 발송 서버 기능',ok:env.ANNIVERSARY_SENDING_ENABLED==='true',action:'기념일 전용 템플릿 준비 후 Cloudflare 텍스트 변수 ANNIVERSARY_SENDING_ENABLED = true'},
+ {key:'KAKAO_SENDING_ENABLED',label:'카카오 발송 공통 설정',ok:env.KAKAO_SENDING_ENABLED==='true',action:'Cloudflare 텍스트 변수 KAKAO_SENDING_ENABLED = true'},
+ {key:'SOLAPI_ANNIVERSARY_TEMPLATE_ID',label:'기념일 전용 메시지 템플릿',ok:!!env.SOLAPI_ANNIVERSARY_TEMPLATE_ID,action:'SOLAPI에서 기념일용 브랜드 메시지 템플릿을 준비하고 해당 ID를 같은 이름의 변수에 등록. 배송완료 템플릿과 별개'},
+ {key:'SOLAPI_CHANNEL_ID',label:'SOLAPI 카카오 채널',ok:!!env.SOLAPI_CHANNEL_ID,action:'기존 SOLAPI 채널 ID 등록'},
+ {key:'SOLAPI_API_KEY',label:'SOLAPI API 키',ok:!!env.SOLAPI_API_KEY,action:'Cloudflare 비밀에 등록. 값은 이 화면에 표시하지 않음'},
+ {key:'SOLAPI_API_SECRET',label:'SOLAPI API 시크릿',ok:!!env.SOLAPI_API_SECRET,action:'Cloudflare 비밀에 등록. 값은 이 화면에 표시하지 않음'},
+ {key:'PUBLIC_ORIGIN',label:'홈페이지 주소',ok:!!configuredOrigin(env),action:'Cloudflare PUBLIC_ORIGIN에 실제 HTTPS 홈페이지 주소 등록'},
+ {key:'SESSION_SECRET',label:'세션 보안 설정',ok:!!env.SESSION_SECRET&&env.SESSION_SECRET.length>=32,action:'기존 32자 이상 SESSION_SECRET 유지. 새 값을 임의로 입력하지 않음'},
+ {key:'KAKAO_TEST_PHONE',label:'본인 수신 테스트 번호',ok:!!normalizePhone(env.KAKAO_TEST_PHONE||''),action:'Cloudflare 비밀 KAKAO_TEST_PHONE에 본인 전화번호 등록'}
+]}
 const label=(v:unknown)=>typeof v==='string'?v.trim():'';
 function clean(b:any){assert(b&&typeof b.label==='string'&&label(b.label).length>=1&&label(b.label).length<=40&&!/[\r\n<>]/.test(b.label),400,'기념일 이름은 1~40자로 입력해주세요.');assert(Number.isInteger(b.month)&&Number.isInteger(b.day)&&b.month>=1&&b.month<=12&&b.day>=1&&b.day<=new Date(Date.UTC(2000,b.month,0)).getUTCDate(),400,'유효한 월과 일을 선택해주세요.');assert(typeof b.notify==='boolean',400,'알림 신청 여부를 확인해주세요.');return {label:label(b.label),month:b.month,day:b.day,notify:b.notify?1:0}}
 function detail(b:any){
@@ -77,10 +89,10 @@ export async function anniversaryApi(req:Request,env:Env,path:string):Promise<Re
    const parts:string[]=[],args:any[]=[];
    for(const date of dates){const y=+date.slice(0,4),m=+date.slice(5,7),d=+date.slice(8,10);parts.push('(a.month=? AND (a.day=? OR (?=1 AND a.day=29)))');args.push(m,d,+(m===2&&d===28&&new Date(Date.UTC(y,2,0)).getUTCDate()===28))}
    const where=' WHERE a.deleted=0'+(range==='all'?'':' AND ('+parts.join(' OR ')+')');if(range==='all')args.length=0;
-   const rows=await env.DB.prepare('SELECT a.*,c.name customer_name,substr(c.phone_normalized,-4) phone_suffix,coalesce(p.marketing,0) marketing,coalesce(p.channel_friend,0) channel_friend FROM anniversary_reminders a JOIN customers c ON c.id=a.customer_id LEFT JOIN anniversary_reminder_preferences p ON p.customer_id=a.customer_id'+where+' ORDER BY a.month,a.day LIMIT 100 OFFSET ?').bind(...args,(Math.floor(page)-1)*100).all<any>();
+   const rows=await env.DB.prepare('SELECT a.*,c.name customer_name,substr(c.phone_normalized,-4) phone_suffix,CASE WHEN c.phone_normalized IS NOT NULL AND length(c.phone_normalized)>=9 THEN 1 ELSE 0 END phone_ready,coalesce(p.marketing,0) marketing,coalesce(p.channel_friend,0) channel_friend FROM anniversary_reminders a JOIN customers c ON c.id=a.customer_id LEFT JOIN anniversary_reminder_preferences p ON p.customer_id=a.customer_id'+where+' ORDER BY a.month,a.day LIMIT 100 OFFSET ?').bind(...args,(Math.floor(page)-1)*100).all<any>();
    const logs=await env.DB.prepare('SELECT n.id,n.status,n.failure_code,n.due_date,n.updated_at,c.name customer_name,a.label FROM anniversary_reminder_outbox n JOIN customers c ON c.id=n.customer_id JOIN anniversary_reminders a ON a.id=n.anniversary_id ORDER BY n.updated_at DESC LIMIT 50').all();const count:any=await env.DB.prepare('SELECT COUNT(*) n FROM anniversary_reminders a'+where).bind(...args).first();
    const couponSettings=await env.DB.prepare('SELECT * FROM anniversary_coupon_settings WHERE id=1').first();const couponCounts=await env.DB.prepare("SELECT COUNT(*) issued,(SELECT COUNT(*) FROM anniversary_coupon_redemptions WHERE status='USED') used FROM anniversary_coupons").first();
-   return json({coupons:{settings:couponSettings,configured:!!couponConfigured(env),counts:couponCounts},today,page:Math.floor(page),total:count.n,settings,mode:mode(env),rows:rows.results.map(a=>({...a,...nextReminder(a.month,a.day,today)})).sort((a,b)=>a.notice.localeCompare(b.notice)),logs:logs.results});
+   return json({setup:anniversarySetup(env),coupons:{settings:couponSettings,configured:!!couponConfigured(env),counts:couponCounts},today,page:Math.floor(page),total:count.n,settings,mode:mode(env),rows:rows.results.map(a=>({...a,...nextReminder(a.month,a.day,today)})).sort((a,b)=>a.notice.localeCompare(b.notice)),logs:logs.results});
   }
  }
  return null;

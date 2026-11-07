@@ -1,3 +1,4 @@
+import {PhoneInput} from './phone-input';
 import {RecentProductPhotos} from './size-photo-gallery';
 import {NoticeImport} from './notice-import';
 import {goToStep} from "./step-motion";
@@ -12,7 +13,7 @@ export function WeddingFlow({variants,phone,times}:any){
  const linkValid=/^https?:\/\/[^\s]+$/i.test(form.noticeUrl||'');const evidence=method==='link'?linkValid:method==='capture'?!!attachment:false;
  const variant=variants.find((v:any)=>v.size===selected);const update=(k:string,v:string)=>{setForm(f=>{const n={...f,[k]:v};if(['groom','bride'].includes(k))n.person=[n.groom,n.bride].filter(Boolean).join(' / ');return n});setPayment(false);const owner=['name','phone'].includes(k)?2:['sender','message'].includes(k)?3:1;setStep(s=>Math.min(s,owner))};
  const next=(current:number)=>{setStep(current+1);goToStep('wreath-step-'+(current+1))};
- const field=(key:string,label:string,placeholder='',optional=false)=><label className="w-flow-field" key={key}><span>{label} {!optional&&<em>*</em>}</span><input type={key==='phone'?'tel':key==='departureDate'?'date':key==='departureTime'?'time':'text'} autoComplete={key==='phone'?'tel':key==='name'?'name':'off'} value={form[key]||''} placeholder={placeholder} onChange={e=>update(key,e.target.value)}/></label>;
+ const field=(key:string,label:string,placeholder='',optional=false)=><label className="w-flow-field" key={key}><span>{label} {!optional&&<em>*</em>}</span><PhoneInput telephone={key.toLowerCase().includes('phone')} type={key==='phone'?'tel':key==='departureDate'?'date':key==='departureTime'?'time':'text'} autoComplete={key==='phone'?'tel':key==='name'?'name':'off'} value={form[key]||''} placeholder={placeholder} onChange={e=>update(key,e.target.value)}/></label>;
 
  return <section className="wreath-flow" id="wreath-order" aria-label="축하화환 단계별 주문"><div className="w-flow-heading"><span className="wreath-kicker">마음을 전하는 순서</span><h2>하나씩 알려주세요.</h2><p>상품과 배송 정보를 확인하고 결제로 이어집니다.</p></div><ol className="w-flow-progress" aria-label="진행 단계">{labels.map((label,i)=><li key={label} aria-current={step===i?'step':undefined}><span>{i<step?'✓':i+1}</span><small>{label}</small></li>)}</ol>
  {labels.map((label,i)=>i<=step?<section className="w-flow-panel" id={'wreath-step-'+i} key={label} aria-label={label}>
