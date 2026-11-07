@@ -1,9 +1,9 @@
-import {DateInput} from './korean-calendar';
+import {DateInput,koreanToday} from './korean-calendar';
 import React from 'react';
 export const relationships=['가족','연인','배우자','소중한 사람'] as const;
 export const occasionTypes=['생일','결혼기념일','사귄 날','기타'] as const;
 export type AnniversaryDraft={relationship:string;occasion:string;memo:string;startDate:string;label:string;month:number;day:number};
-export const newAnniversaryDraft=(month=1,day=1):AnniversaryDraft=>({relationship:'',occasion:'',memo:'',startDate:'',label:'',month,day});
+export const newAnniversaryDraft=(month=Number(koreanToday().slice(5,7)),day=Number(koreanToday().slice(8,10))):AnniversaryDraft=>({relationship:'',occasion:'',memo:'',startDate:'',label:'',month,day});
 export function anniversaryTitle(v:AnniversaryDraft){return v.occasion==='기타'?v.label.trim():`${v.relationship} ${v.occasion}`.trim()}
 export function draftReady(v:AnniversaryDraft){return !!v.relationship&&!!v.occasion&&!!anniversaryTitle(v)&&(v.occasion!=='사귄 날'||!!v.startDate)}
 const iso=(d:Date)=>d.toISOString().slice(0,10);
