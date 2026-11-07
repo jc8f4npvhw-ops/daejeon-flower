@@ -1,6 +1,7 @@
 import {readFileSync,writeFileSync,mkdtempSync,rmSync} from 'node:fs';
-import {spawnSync} from 'node:child_process';
 import {tmpdir} from 'node:os';
+import {spawnSync} from 'node:child_process';
+import {stripVTControlCharacters} from 'node:util';
 import {join,dirname,resolve} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 
@@ -12,12 +13,25 @@ export function preparationSql(existingColumns=[]) {
   return sql+'\n'+Object.entries(detailColumns).filter(([name])=>!existingColumns.includes(name))
     .map(([name,type])=>'ALTER TABLE anniversary_reminders ADD COLUMN '+name+' '+type+';').join('\n');
 }
-function execute(args) {
-  const result=spawnSync(process.execPath,[join(root,'node_modules/wrangler/bin/wrangler.js'),'d1','execute','daejeon-flower-db','--remote','--json',...args],{cwd:root,encoding:'utf8',maxBuffer:8*1024*1024,timeout:300000});
+export function parseWranglerResult(stdout) {
+  // File imports can write spinner/progress text before the JSON, even with --json.
+  const clean=stripVTControlCharacters(stdout).replace(/^\uFEFF/,'').trim();
+  const starts=[0,...Array.from(clean.matchAll(/\n[ \t]*(?=\[)/g),match=>match.index+match[0].length)];
+  for(const start of starts) {
+    let data;try {data=JSON.parse(clean.slice(start))} catch {continue}
+    if(!Array.isArray(data)||!data.length||data.some(item=>!item||item.success!==true||!Array.isArray(item.results))) throw new Error('Database command failed. Stop before publishing.');
+    return data.flatMap(item=>item.results);
+  }
+  throw new Error('Database result could not be read. Changes may already have applied. Re-run preparation to inspect the current schema before publishing.');
+}
+export function wranglerArgs(args) {
+  return [join(root,'node_modules/wrangler/bin/wrangler.js'),'d1','execute','daejeon-flower-db','--remote','--json',...args];
+}
+function execute(args,{schemaWrite=false}={}) {
+  const result=spawnSync(process.execPath,wranglerArgs(args),{cwd:root,encoding:'utf8',maxBuffer:8*1024*1024,timeout:300000});
   if(result.error||result.status!==0) throw new Error(result.stderr||result.stdout||String(result.error));
-  let data;try {data=JSON.parse(result.stdout)} catch {throw new Error('Cloudflare returned an unreadable result. No further changes were attempted.')}
-  if(!Array.isArray(data)||data.some(item=>item.success!==true)) throw new Error('Database command failed. Stop before publishing.');
-  return data.flatMap(item=>item.results||[]);
+  // Import progress is not a query result. Validate the actual schema below.
+  return schemaWrite ? [] : parseWranglerResult(result.stdout);
 }
 export function main() {
   const tables=execute(['--command',"SELECT name FROM sqlite_master WHERE type='table'"]);
@@ -25,13 +39,16 @@ export function main() {
   const columns=execute(['--command','PRAGMA table_info(anniversary_reminders)']).map(row=>row.name);
   const temporary=mkdtempSync(join(tmpdir(),'dfds-db-'));
   try {
-    const file=join(temporary,'anniversary.sql');
-    writeFileSync(file,preparationSql(columns),'utf8');
     console.log('Adding anniversary tables and missing fields. Existing customer/order records are retained.');
-    execute(['--file',file,'--yes']);
+    const sql=preparationSql(columns),file=join(temporary,'anniversary.sql');
+    writeFileSync(file,sql,'utf8');
+    // SQL beginning "--" is interpreted as a CLI option when passed via --command.
+    // Keep SQL/comments/newlines out of the argument list on every platform.
+    execute(['--file',file,'--yes'],{schemaWrite:true});
     const after=execute(['--command','PRAGMA table_info(anniversary_reminders)']).map(row=>row.name);
-    const names=execute(['--command',"SELECT name FROM sqlite_master WHERE type='table'"]).map(row=>row.name);
-    if(!Object.keys(detailColumns).every(name=>after.includes(name))||!['anniversary_coupons','anniversary_coupon_redemptions','anniversary_payment_access','anniversary_reminder_starts'].every(name=>names.includes(name))) throw new Error('Schema verification failed. Stop before publishing.');
+    const names=execute(['--command',"SELECT name FROM sqlite_master WHERE type IN ('table','index','trigger')"]).map(row=>row.name);
+    const expected=Array.from(sql.matchAll(/CREATE (?:UNIQUE )?(?:TABLE|INDEX|TRIGGER) IF NOT EXISTS (\w+)/g),match=>match[1]);
+    if(!Object.keys(detailColumns).every(name=>after.includes(name))||!expected.every(name=>names.includes(name))) throw new Error('Schema verification failed. Stop before publishing.');
     console.log('Database preparation completed. Commit and Push the release files next. Automatic sending/payment switches were not changed.');
   } finally {rmSync(temporary,{recursive:true,force:true})}
 }

@@ -1,0 +1,25 @@
+DB 준비 오류 수정
+
+대상: 로그인 성공 후 Adding anniversary tables... 다음
+Cloudflare returned an unreadable result 문구와 STOP이 표시된 경우.
+
+기존 ZIP 전체를 다시 덮어쓰거나 Commit을 취소할 필요가 없습니다.
+이 패치의 daejeon-flower-final 내용물을 저장소의 같은 폴더에 덮어씁니다.
+해당 폴더 안 retry-db-preparation.cmd를 실행하세요.
+기존에 설치한 도구와 Cloudflare 로그인 상태를 사용합니다.
+DB의 현재 열을 먼저 확인하므로 이미 적용된 항목은 중복 추가하지 않습니다.
+고객/주문 삭제, 결제/자동발송 활성화는 하지 않습니다.
+
+READY가 나오면 GitHub Desktop에 수정 파일이 표시됩니다.
+Summary: DB 준비 결과 처리 수정
+추가 Commit 후 Push origin을 누릅니다.
+현재 있는 기존 Commit은 그대로 두세요.
+STOP이 다시 나오면 Push하지 말고 오류 화면을 공유해주세요.
+
+변경 이유:
+Wrangler의 파일 업로드 진행 문구와 JSON이 섞인 결과를 읽지 못하던 문제를 수정했습니다.
+SQL 맨 앞 -- 주석이 명령 옵션으로 잘못 해석되는 문제도 수정했습니다.
+SQL을 임시 파일로 전달하고, 변경 후 실제 DB의 테이블/열/인덱스/트리거를 조회해 검증합니다.
+쓰기 명령의 진행 출력은 JSON으로 해석하지 않습니다. 읽기 조회 결과만 엄격히 검증합니다.
+진행 문구/ANSI/BOM, 오류 결과, 부분 적용 및 반복 실행 테스트 4개와 타입 검사 통과.
+실제 운영 DB의 완료 여부는 이 PC에서 재실행 후 READY로 확인해야 합니다.
