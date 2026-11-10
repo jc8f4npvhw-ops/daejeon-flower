@@ -1,6 +1,7 @@
 "use client";
 import {DateInput} from './korean-calendar';
 import {PhoneInput} from './phone-input';
+import {MEMBER_PRIVACY_CONSENT_PATH,MemberPrivacyConsentContent} from './member-privacy-consent';
 import React,{useEffect,useState} from 'react';
 import {MemberOrders} from './member-orders';
 import {KakaoExtras} from './kakao-extras';
@@ -26,8 +27,8 @@ export function MemberAccess({account=false}:{account?:boolean}){
  <label>전화번호 <small>선택</small><PhoneInput autoComplete="tel" type="tel" inputMode="numeric" value={phone} maxLength={16} placeholder="010-0000-0000" onChange={e=>setPhone(e.target.value)}/><span className="df-help">주문 시 연락처 입력에 활용합니다.<br/>직접 입력한 번호는 본인 인증된 번호로 취급하지 않습니다.</span></label>
  <label>생일 <small>선택 · 양력</small></label><DateInput aria-label="생일 선택" recurring value={month&&day?`2000-${month}-${day}`:''} onChange={e=>{setMonth(e.target.value.slice(5,7));setDay(e.target.value.slice(8,10))}}/>
  <p className="df-help">생일 저장이 기념일 알림 신청을 뜻하지는 않습니다.<br/>가입 후 원하는 기념일과 수신 여부를 직접 선택하세요.</p>
- <div className="df-consents">{acceptedTerms&&acceptedPrivacy&&<p className="df-help">카카오에서 필수 약관 동의를 확인했어요.</p>}{!acceptedTerms&&<label><input type="checkbox" checked={terms} onChange={e=>setTerms(e.target.checked)}/><span>[필수] <a href="/terms" target="_blank" rel="noreferrer">서비스 이용약관</a>에 동의합니다.</span></label>}{!acceptedPrivacy&&<label><input type="checkbox" checked={privacy} onChange={e=>setPrivacy(e.target.checked)}/><span>[필수] 회원정보 수집·이용 안내를 확인하고 동의합니다.</span></label>}</div>
- <details open><summary>회원정보 수집·이용 안내</summary><p>필수: 카카오 회원 식별번호, 약관 동의 이력.<br/>선택: 이름, 전화번호, 생일(월·일).<br/>목적: 회원 식별 및 로그인 유지, 주문 입력 편의, 기념일 등록 편의.<br/>보유기간: 회원 탈퇴 시까지. 법령에 따른 거래 기록은 별도 보관합니다.</p><p>선택 정보를 제공하지 않아도 가입할 수 있습니다.<br/>탈퇴·정보 삭제 요청은 개인정보처리방침의 매장 연락처로 문의해주세요.</p><a href="/privacy" target="_blank" rel="noreferrer">개인정보처리방침 전체 보기 →</a></details>
+ <div className="df-consents">{acceptedTerms&&acceptedPrivacy&&<p className="df-help">카카오에서 필수 약관 동의를 확인했어요.</p>}{!acceptedTerms&&<label><input type="checkbox" checked={terms} onChange={e=>setTerms(e.target.checked)}/><span>[필수] <a href="/terms" target="_blank" rel="noreferrer">서비스 이용약관</a>에 동의합니다.</span></label>}{!acceptedPrivacy&&<label><input type="checkbox" checked={privacy} onChange={e=>setPrivacy(e.target.checked)}/><span>[필수] <a href={MEMBER_PRIVACY_CONSENT_PATH} target="_blank" rel="noreferrer">회원정보 수집·이용 안내</a>를 확인하고 동의합니다.</span></label>}</div>
+ <details open><summary>회원정보 수집·이용 안내</summary><MemberPrivacyConsentContent/></details>
  <button className="df-primary" disabled={!(acceptedTerms||terms)||!(acceptedPrivacy||privacy)||busy||!!month!==!!day}>{busy?'가입 정보를 저장하고 있어요…':'가입하고 기념일 관리하기'}</button><p className="df-help">광고 수신과 채널 친구 추가는 별도 선택입니다.</p></form>:<><section className="df-card"><div className="df-benefit">✿<h2>다음에도 이어지는 선물</h2><p>저장한 기념일과 쿠폰을<br/>다시 로그인해 확인할 수 있어요.</p></div><form action="/api/auth/kakao/start" method="post"><button className="df-kakao" disabled={!ready}><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.5 2 10.8c0 2.8 1.9 5.3 4.8 6.7L5.6 21l4.3-2.6 2.1.2c5.5 0 10-3.5 10-7.8S17.5 3 12 3Z"/></svg>카카오로 시작하기</button></form>{!ready&&<p role="status" className="df-help">카카오 로그인 연결을 준비하고 있습니다.</p>}<p className="df-help">비밀번호를 따로 만들 필요 없어요.<br/>이름·전화번호·생일은 선택 사항입니다.</p></section><a className="df-guest" href="/">가입하지 않고 상품 둘러보기 →</a><nav><a href="/terms">이용약관</a><a href="/privacy">개인정보처리방침</a></nav></>}
  </div></div>;
 }
