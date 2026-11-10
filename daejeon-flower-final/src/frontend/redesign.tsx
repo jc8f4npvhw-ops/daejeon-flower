@@ -411,7 +411,7 @@ function LegacyMainPage({ main }: { main: Main }) {
 }
 
 function Footer() {const [policy,setPolicy]=useState('');
-  return <footer className="footer"><b>대전꽃백화점</b><div style={{ marginTop: 8 }}>대표자 : 주현식<br />사업자등록번호 : 305-90-83979<br />통신판매업 신고번호 : 제2023-대전동구-0327호<br />대전광역시 동구 가오동 584 1층 대전꽃백화점<br />T. <a href={'tel:'+cms.settings.phone.replace(/[^+0-9]/g,'')}>{cms.settings.phone}</a><br />E. Daejeonflowershop@gmail.com</div><div className="footer-links"><button onClick={()=>setPolicy('terms')}>이용약관</button><a href="/privacy">개인정보처리방침</a><button onClick={()=>setPolicy('refund')}>취소·환불 안내</button>{policy&&<Policy kind={policy} close={()=>setPolicy('')}/>}
+  return <footer className="footer"><b>대전꽃백화점</b><div style={{ marginTop: 8 }}>대표자 : 주현식<br />사업자등록번호 : 305-90-83979<br />통신판매업 신고번호 : 제2023-대전동구-0327호<br />대전광역시 동구 가오동 584 1층 대전꽃백화점<br />T. <a href={'tel:'+cms.settings.phone.replace(/[^+0-9]/g,'')}>{cms.settings.phone}</a><br />E. Daejeonflowershop@gmail.com</div><div className="footer-links"><button onClick={()=>setPolicy('terms')}>이용약관</button><a href="/privacy">개인정보처리방침</a><a href="/refund">취소·환불 안내</a>{policy&&<Policy kind={policy} close={()=>setPolicy('')}/>}
 <External kind="naver" source="푸터">NAVER PLACE</External></div><div style={{ marginTop: 16 }}>© DAEJEON FLOWER DEPARTMENT STORE.</div></footer>;
 }
 

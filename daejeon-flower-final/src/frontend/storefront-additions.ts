@@ -27,11 +27,13 @@ export const refundPolicy = [
  '전화 042-272-8815 / 이메일 Daejeonflowershop@gmail.com',
  '정하지 않은 사항은 관계 법령과 적용 가능한 소비자분쟁해결기준에 따릅니다.'
 ].join('\n');
-export const customRefundDraft='맞춤 주문 취소정책 검토안 · 고객 화면 미노출\n수령 3~2일 전: 상품금액 70% 환불\n수령 1일 전: 상품금액 50% 환불\n수령 당일: 상품금액 환불 없음\n하자·오배송·매장 귀책사유 제외. 미발생 배송비 별도 환급.\n적용 대상·사입 손실·법정 청약철회 예외·공제율 유효성 검토 후 확정. 4일 이전 기준과 별도 동의 절차도 확정 필요. 자동 공제 기능은 비활성.';
+const previousCustomRefundDraft='맞춤 주문 취소정책 검토안 · 고객 화면 미노출\n수령 3~2일 전: 상품금액 70% 환불';
+export const customRefundDraft='맞춤 생화 예약 취소 기준: 수령 4일 전 또는 그 이전 0%, 3일 전 5%, 2일 전 10%, 1일 전 50%, 당일 100% 차감. 적용 요건과 예외는 /refund 참조. 자동 공제 기능은 비활성.';
 export function upgradeStorefrontAdditions(data:any){
  if((data.preservedRelease||0)<1){
   data={...data,preservedRelease:1,sections:{...data.sections,PRESERVED:data.sections?.PRESERVED??{status:'preparing',title:'프리저브드',message:'프리저브드 상품을 준비하고 있습니다. 조금만 기다려주세요.',body:'오래 간직하고 싶은 마음을 전해보세요. 원하시는 색감과 선물할 상황, 예산을 알려주시면 준비 가능한 구성을 안내해드립니다.'}},settings:{...data.settings,refund:data.settings?.refund?.trim()?data.settings.refund:refundPolicy,customRefundDraft:data.settings?.customRefundDraft??customRefundDraft}};
  }
+ if(data.settings?.customRefundDraft?.startsWith(previousCustomRefundDraft))data={...data,settings:{...data.settings,customRefundDraft}};
  if((data.preservedRelease||0)>=2)return data;
  return {...data,preservedRelease:2,sections:{...data.sections,PRESERVED:{...data.sections.PRESERVED,status:'preparing',message:'프리저브드 상품을 준비하고 있습니다. 조금만 기다려주세요.'}}};
 }
