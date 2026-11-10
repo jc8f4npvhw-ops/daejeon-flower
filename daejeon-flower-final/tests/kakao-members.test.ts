@@ -111,3 +111,41 @@ test('Kakao redirect responses are rejected without following or forwarding cred
  globalThis.fetch=async(_input:any,init:any)=>{calls++;assert.equal(init.redirect,'manual');return new Response(null,{status:302,headers:{Location:'https://other.example'}})};
  try{const r=await handleApi(req('/auth/kakao/callback?code=x&state='+s.state,'GET',undefined,s.cookie),env);assert.equal(r.headers.get('location'),'/register?error=provider');assert.equal(calls,1);assert.equal(env.sql.prepare('SELECT count(*) n FROM kakao_members').get().n,0)}finally{globalThis.fetch=original;env.sql.close()}
 });
+
+test('Kakao Sync signup records only verified provider agreements and keeps phone optional',async()=>{
+ const env=setup(),original=globalThis.fetch;env.KAKAO_SYNC_ENABLED='true';
+ const at='2026-11-10T00:00:00Z',terms='dfds-member-terms-v1',privacy='dfds-member-privacy-v1';
+ let profileId=321,consentId=321,complete=true;
+ globalThis.fetch=async(input:any,init:any)=>{
+  const url=new URL(String(input));
+  if(url.pathname==='/oauth/token')return Response.json({access_token:'test-token'});
+  assert.equal(init.headers.Authorization,'Bearer test-token');
+  if(url.pathname==='/v2/user/me')return Response.json({id:profileId,kakao_account:{phone_number_needs_agreement:true}});
+  assert.equal(url.pathname,'/v2/user/service_terms');
+  assert.equal(url.searchParams.get('tags'),terms+','+privacy);
+  return Response.json({id:consentId,service_terms:[terms,...(complete?[privacy]:[])].map(tag=>({tag,required:true,agreed:true,agreed_at:at}))});
+ };
+ async function callback(){
+  const s=await start(env);
+  const r=await handleApi(req('/auth/kakao/callback?code=x&state='+s.state,'GET',undefined,s.cookie),env);
+  assert.equal(r.headers.get('location'),'/register');
+  const cookie=cookies(r),p=await handleApi(req('/auth/signup','GET',undefined,cookie),env);
+  assert.equal(p.status,200);
+  return {cookie,...await p.json() as any};
+ }
+ try{
+  let p=await callback();assert.deepEqual(p.accepted,{terms:true,privacy:true});
+  assert.equal((await join(env,p,{terms:false,privacy:false})).status,200);
+  const rows=env.sql.prepare('SELECT tag,policy_version,agreed_at FROM kakao_member_term_consents ORDER BY tag').all().map((row:any)=>({...row}));
+  assert.deepEqual(rows,[privacy,terms].map(tag=>({tag,policy_version:memberPolicy,agreed_at:at})));
+  assert.equal(env.sql.prepare("SELECT phone_verified FROM kakao_members WHERE kakao_id='321'").get().phone_verified,0);
+  profileId=322;consentId=322;complete=false;
+  p=await callback();assert.deepEqual(p.accepted,{terms:true,privacy:false});
+  assert.equal((await join(env,p,{terms:false,privacy:false,accepted:{privacy:true}})).status,400);
+  assert.equal((await join(env,p,{terms:false,privacy:true})).status,200);
+  profileId=323;consentId=999;
+  p=await callback();assert.deepEqual(p.accepted,{terms:false,privacy:false});
+  assert.equal((await join(env,p,{terms:false,privacy:false})).status,400);
+  assert.equal(env.sql.prepare('SELECT COUNT(*) n FROM kakao_member_term_consents').get().n,3);
+ }finally{globalThis.fetch=original;env.sql.close()}
+});

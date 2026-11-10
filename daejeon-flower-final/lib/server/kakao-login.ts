@@ -4,6 +4,13 @@ import {kakaoFeatureApi,finishFeature} from './kakao-features';
 import {admin} from './auth';
 const authCookie='__Host-dfds_member',pendingCookie='__Host-dfds_signup',stateCookie='__Host-dfds_kakao_state';
 export const memberPolicy='member-v1-20261107';
+const syncTerms={terms:'dfds-member-terms-v1',privacy:'dfds-member-privacy-v1'} as const;
+function kakaoConsent(response:any,id:string){
+ if(String(response?.id)!==id||!Array.isArray(response?.service_terms))return {};
+ const agreed=(tag:string)=>{const entries=response.service_terms.filter((item:any)=>item?.tag===tag);const item=entries[0];return entries.length===1&&item.required===true&&item.agreed===true&&typeof item.agreed_at==='string'&&Number.isFinite(Date.parse(item.agreed_at))?item.agreed_at:undefined};
+ return {terms:agreed(syncTerms.terms),privacy:agreed(syncTerms.privacy)};
+}
+
 export function kakaoPhone(value:unknown){let s=typeof value==='string'?value.replace(/[^0-9]/g,''):'';if(s.startsWith('8201'))s=s.slice(2);return normalizePhone(s)}
 const cookieValue=(req:Request,name:string)=>(req.headers.get('cookie')||'').split(';').map(v=>v.trim()).find(v=>v.startsWith(name+'='))?.slice(name.length+1)||'';
 const setCookie=(name:string,raw:string,maxAge:number,lax=false)=>name+'='+raw+'; Path=/; Secure; HttpOnly; SameSite='+(lax?'Lax':'Strict')+'; Max-Age='+maxAge;
@@ -36,20 +43,32 @@ export async function kakaoLoginApi(req:Request,env:Env,path:string):Promise<Res
    const profile=await provider('https://kapi.kakao.com/v2/user/me',{headers:{Authorization:'Bearer '+access.access_token}});assert(Number.isSafeInteger(profile.id)&&profile.id>0,502,'카카오 회원 정보를 확인해주세요.');const id=String(profile.id);
    const member:any=await env.DB.prepare('SELECT customer_id FROM kakao_members WHERE kakao_id=?').bind(id).first();if(member)return redirect('/account',await signedIn(env,member.customer_id));
    const a=profile.kakao_account||{},phone=a.phone_number_needs_agreement?'':kakaoPhone(a.phone_number),birthday=!a.birthday_needs_agreement&&a.birthday_type==='SOLAR'&&/^\d{4}$/.test(a.birthday||'')?a.birthday.slice(0,2)+'-'+a.birthday.slice(2):'';
-   const claims={name:!a.name_needs_agreement&&typeof a.name==='string'?a.name.slice(0,50):'',phone:/^01\d{8,9}$/.test(phone)?phone:'',birthday:validBirthday(birthday)?birthday:''};
+   let syncConsent:{terms?:string;privacy?:string}={};
+   if(env.KAKAO_SYNC_ENABLED==='true'){
+    const termsUrl=new URL('https://kapi.kakao.com/v2/user/service_terms');
+    termsUrl.searchParams.set('tags',Object.values(syncTerms).join(','));
+    try{syncConsent=kakaoConsent(await provider(termsUrl.href,{headers:{Authorization:'Bearer '+access.access_token}}),id)}catch{/* Fall back to the site's own consent form. */}
+   }
+   const claims={syncConsent,name:!a.name_needs_agreement&&typeof a.name==='string'?a.name.slice(0,50):'',phone:/^01\d{8,9}$/.test(phone)?phone:'',birthday:validBirthday(birthday)?birthday:''};
    const raw=token();await env.DB.prepare("INSERT INTO kakao_signup_sessions(token_hash,kakao_id,claims_json,expires_at) VALUES(?,?,?,datetime('now','+15 minutes'))").bind(await hash(raw),id,JSON.stringify(claims)).run();
    return redirect('/register',[setCookie(pendingCookie,raw,900),setCookie(stateCookie,'',0,true)]);
   }catch{return redirect('/register?error=provider',[setCookie(stateCookie,'',0,true)])}
  }
- if(path==='/auth/signup'&&req.method==='GET'){const p=await pending(req,env);return json({csrf:p.csrf,profile:p.claims,policyVersion:memberPolicy})}
+ if(path==='/auth/signup'&&req.method==='GET'){const p=await pending(req,env);return json({csrf:p.csrf,profile:{name:p.claims.name,phone:p.claims.phone,birthday:p.claims.birthday},accepted:{terms:!!p.claims.syncConsent?.terms,privacy:!!p.claims.syncConsent?.privacy},policyVersion:memberPolicy})}
  if(path==='/auth/signup'&&req.method==='POST'){
-  sameOrigin(req);const p=await pending(req,env);assert(constantEqual(req.headers.get('x-csrf-token')||'',p.csrf),403,'가입 화면을 새로 열어주세요.');const b=await body(req,2048);assert(b.terms===true&&b.privacy===true&&b.policyVersion===memberPolicy,400,'필수 약관과 개인정보 안내를 확인해주세요.');
+  sameOrigin(req);const p=await pending(req,env);assert(constantEqual(req.headers.get('x-csrf-token')||'',p.csrf),403,'가입 화면을 새로 열어주세요.');const b=await body(req,2048);assert((p.claims.syncConsent?.terms||b.terms===true)&&(p.claims.syncConsent?.privacy||b.privacy===true)&&b.policyVersion===memberPolicy,400,'필수 약관과 개인정보 안내를 확인해주세요.');
   assert(typeof b.name==='string'&&b.name.trim().length<=50&&typeof b.phone==='string'&&typeof b.birthday==='string'&&validBirthday(b.birthday),400,'이름·전화번호·생일을 확인해주세요.');
   const phone=normalizePhone(b.phone);assert(!b.phone.trim()||!!phone,400,'국내 휴대전화번호를 입력해주세요.');const verified=!!phone&&phone===p.claims.phone,cid=Number.parseInt(token().slice(0,12),16)+1;
   // A guest-entered phone never authorizes access to another customer. Existing phone records are not merged.
   const occupied=phone?await env.DB.prepare('SELECT id FROM customers WHERE phone_normalized=?').bind(phone).first():null;
   const verifiedUnique=verified&&!occupied?phone:null;
   const statements=[env.DB.prepare('INSERT INTO customers(id,name,phone_normalized) VALUES(?,?,?)').bind(cid,b.name.trim()||null,verifiedUnique),env.DB.prepare('INSERT INTO kakao_members(kakao_id,customer_id,contact_phone,birthday,phone_verified,terms_version) VALUES(?,?,?,?,?,?)').bind(p.kakao_id,cid,phone||null,b.birthday||null,+verified,memberPolicy),env.DB.prepare("UPDATE kakao_signup_sessions SET consumed=1 WHERE token_hash=? AND consumed=0 AND expires_at>CURRENT_TIMESTAMP").bind(p.token_hash)];
+  if(p.claims.syncConsent?.terms||p.claims.syncConsent?.privacy){
+   const evidence=p.claims.syncConsent;
+   for(const kind of ['terms','privacy'] as const){
+    if(evidence[kind])statements.push(env.DB.prepare('INSERT INTO kakao_member_term_consents(customer_id,tag,policy_version,agreed_at) VALUES(?,?,?,?)').bind(cid,syncTerms[kind],memberPolicy,evidence[kind]));
+   }
+  }
   // One conditional claim prevents replay before the atomic creation batch.
   const consumed=await env.DB.prepare("UPDATE kakao_signup_sessions SET consumed=2 WHERE token_hash=? AND consumed=0 AND expires_at>CURRENT_TIMESTAMP").bind(p.token_hash).run();assert(consumed.meta.changes===1,409,'가입 요청을 다시 확인해주세요.');
   try{statements[2]=env.DB.prepare('UPDATE kakao_signup_sessions SET consumed=1 WHERE token_hash=? AND consumed=2').bind(p.token_hash);await env.DB.batch(statements)}catch(e){await env.DB.prepare('UPDATE kakao_signup_sessions SET consumed=0 WHERE token_hash=? AND consumed=2').bind(p.token_hash).run();throw e}
