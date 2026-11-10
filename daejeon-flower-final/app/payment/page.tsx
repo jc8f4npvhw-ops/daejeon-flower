@@ -9,10 +9,10 @@ export default function Payment(){
   const orderId=q.get('orderId')||'',token=q.get('token')||'';
   if(q.get('paymentKey')){
    const r=await fetch('/api/payments/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId,token,paymentKey:q.get('paymentKey'),amount:Number(q.get('amount'))})});const result:any=await r.json();if(!r.ok||result.status!=='PAID')throw Error(result.message||'결제 완료를 확인하지 못했습니다.');
-   setAccess({orderId:result.orderNo,token});setCompleted({orderNo:result.orderNo,orderName:result.orderName,amount:result.amount,anniversary:result.anniversary});history.replaceState(history.state,'',location.pathname);return;
+   setAccess({orderId:result.orderNo,token});setCompleted({...result});history.replaceState(history.state,'',location.pathname);return;
   }
   const quote=!!q.get('quoteId'),r=await fetch(quote?'/api/quotes/'+encodeURIComponent(q.get('quoteId')!)+'?token='+encodeURIComponent(token):'/api/payments/session?'+q);const d:any=await r.json();if(!r.ok)throw Error(d.message);
-  if(!quote&&d.status==='PAID'){setAccess({orderId:d.orderId,token});setCompleted({orderNo:d.orderId,orderName:d.orderName,amount:d.amount,anniversary:d.anniversary});history.replaceState(history.state,'',location.pathname);return}
+  if(!quote&&d.status==='PAID'){setAccess({orderId:d.orderId,token});setCompleted({...d,orderNo:d.orderId});history.replaceState(history.state,'',location.pathname);return}
   setData({...d,quote});setMessage(q.has('code')?'결제가 완료되지 않았습니다. 결제 수단을 다시 선택해주세요.':'주문 내용을 확인해주세요.');
  }catch(e:any){setMessage(e.message||'결제 정보를 확인하지 못했습니다.')}})()},[]);
  async function pay(){setBusy(true);try{const q=new URLSearchParams(location.search);

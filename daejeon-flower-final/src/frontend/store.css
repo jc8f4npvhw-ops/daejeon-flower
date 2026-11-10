@@ -210,3 +210,30 @@ a,a:visited,button{color:inherit;-webkit-text-fill-color:currentColor}button,a{t
 
 /* Progressive anniversary choices, shared by payment and customer management. */
 .moment-choice{margin:20px 0;text-align:left;min-width:0}.moment-choice fieldset{border:0;padding:0;margin:0 0 22px;min-width:0}.moment-choice legend{font-size:18px;font-weight:700;margin-bottom:12px;color:#263b31}.moment-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.moment-choice-grid button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:58px;padding:12px 8px;border:1px solid #d5ddce;border-radius:14px;background:#fff;color:#314538;font-size:17px;font-weight:600;word-break:keep-all}.moment-choice-grid button span{font-size:23px;line-height:1}.moment-choice-grid button[aria-pressed=true]{border:2px solid #37563f;background:#edf3e8;color:#213b2a;padding:11px 7px;box-shadow:0 2px 6px #2947360b}.moment-choice-grid button:focus-visible,.moment-row-title:focus-visible{outline:3px solid #b58b43;outline-offset:3px}.moment-choice-details{border-top:1px solid #dce2d4;padding-top:18px}.moment-choice-details h3{font-size:17px;margin:0 0 16px;color:#314538}.moment-choice .mp-field{margin-top:12px}.moment-choice .mp-field small{font-size:13px;font-weight:400;color:#65725e}.moment-choice textarea{display:block;box-sizing:border-box;width:100%;resize:vertical;padding:13px;border:1px solid #cbd6c3;border-radius:12px;background:white;color:#24372b;font:inherit;font-size:16px;line-height:1.5}.moment-choice input[type=date]{min-width:0;width:100%;box-sizing:border-box;font-size:17px}.moment-count{padding:16px;border:1px solid #dce2d4;border-radius:14px;background:#f5f7f0;margin:14px 0}.moment-count>strong{display:block;font-size:17px;color:#314c36;line-height:1.5}.moment-count>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.moment-count>div>span{display:flex;flex-direction:column;gap:4px;padding:10px;background:#fff;border-radius:10px}.moment-count b{font-size:15px;color:#334c39}.moment-count time{font-size:14px;color:#43543e}.moment-count small{display:block;font-size:12px;line-height:1.6;color:#65725e;word-break:keep-all}.moment-row-title{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;padding:0;border:0;background:transparent;text-align:left;color:#283f30;font:inherit;cursor:pointer}.moment-row-title strong{font-size:18px;line-height:1.5;word-break:keep-all}.moment-row-title>span{font-size:24px}.moment-memo{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65}.moment-row-details{margin-top:14px}.payment-moment-form>.mp-link{display:block;margin:14px auto 0}@media(max-width:380px){.moment-choice-grid button{font-size:16px;gap:6px}.moment-choice legend{font-size:17px}}
+
+/* A completed order puts the product and handover details before optional actions. */
+.payment-success{max-width:560px;margin-inline:auto;padding:30px clamp(16px,5vw,32px) 40px}
+.payment-success-heading{padding:0 0 25px}
+.payment-success-brand{font-size:12px;font-weight:700;letter-spacing:.11em;color:#4f6757;margin-bottom:25px}
+.payment-success-check{display:grid;place-items:center;width:46px;height:46px;margin:0 auto 12px;border-radius:50%;background:#e6eee5;color:#345644}
+.payment-success-check svg{width:30px;height:30px}
+.payment-success-heading h1{font-size:clamp(25px,5vw,32px);margin:0 0 5px}
+.payment-success-heading p{font-size:14px}
+.payment-order-card{background:#fff;border:1px solid #dce5d8;border-radius:23px;padding:20px;margin-bottom:14px}
+.payment-order-product>span,.payment-order-schedule>span{display:block;font-size:12px;font-weight:700;color:#4f6757;margin-bottom:6px}
+.payment-order-product h2{font-size:22px;line-height:1.35;margin:0;color:#233d2b}
+.payment-order-product p,.payment-order-schedule p{margin:4px 0 0;color:#415b4a}
+.payment-order-schedule{border-radius:15px;background:#edf3e9;padding:13px 15px;margin-top:16px}
+.payment-order-schedule strong{font-size:16px}
+.payment-success-receipt{margin:14px 0 0;padding:9px 0 0;border-bottom:0}
+.payment-success-receipt>div{padding:4px 0}
+.payment-moment-invite{background:#f5f5ee;border:1px solid #e2e5d9;padding:17px 20px;border-radius:19px}
+.payment-moment-invite>h2{font-size:18px;color:#334c3b;margin:0 0 5px}
+.payment-moment-invite>p{font-size:14px;margin:0;color:#516253}
+.payment-moment-invite>.mp-btn{margin-top:12px}
+.payment-success-home{margin-top:10px}
+.style-card.selected{background:#eaf2e8;border-color:#56765e;box-shadow:inset 0 0 0 1px #56765e}
+.style-card.selected .select-btn{background:#315441;color:#fff;border-color:#315441}
+.payment-coupon-amount{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 14px;margin:10px 0;padding:10px 13px;background:#fffdf7;border-radius:12px}
+.payment-coupon-amount>strong{font-size:23px;margin:0}
+.payment-coupon-amount strong small{font-size:14px}
