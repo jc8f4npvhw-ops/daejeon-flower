@@ -46,7 +46,7 @@ export function AdminOperations({tab,api,live,role,onTab,draft,edit,userId}:any)
  const selectDay=(date:string)=>{setDay(date);setReason(data?.closures.find((c:any)=>c.closure_date===date)?.reason||'매장 휴무')};
  const selectMonth=(value:string)=>{setMonth(value);selectDay(value+'-01')};
  const reserved=(data?.reservations||[]).filter((o:any)=>o.fulfillment_at?.startsWith(day));
- return <div className="aw-root">{dialog}{reservation&&<ReservationDetail reservation={reservation} live={live} api={api} products={draft.products} onClose={()=>setReservation(null)}/>}
+ return <div className="aw-root">{dialog}{reservation&&<ReservationDetail reservation={reservation} live={live} api={api} products={draft.products} onClose={()=>setReservation(null)} onChanged={refresh}/>}
  <div className="aw-heading"><div><span className="aw-eyebrow">DAILY STORE WORKSPACE</span><h2>{({대시보드:'오늘도, 마음을 전할 준비.',고객:'한 번의 주문에서 오래가는 인연으로.',예약:'놓치지 않도록, 한눈에.',알림:'보낸 알림과 준비할 메시지.',통계:'매장의 흐름을 읽어보세요.', '관리자 권한':'함께 일하는 사람과 역할.','휴무 설정':'쉬는 날을 간편하게 설정하세요.'} as any)[tab]}</h2></div><button onClick={refresh} disabled={loading}>↻ 새로고침</button></div>
  
  {error&&<p className="aw-error" role="alert">{error}</p>}{notice&&<p className="m-toast" role="status">{notice}</p>}
