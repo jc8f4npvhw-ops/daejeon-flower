@@ -17,3 +17,30 @@ for(let n=0;n<3;n++)r=await handleApi(req('/private-payments/'+id+'/unlock','POS
 data.privatePayments[0].active=false;r=await handleApi(req('/admin/content','PUT',{expectedRevision:data.revision,content:data},h),env as any);assert.equal(r.status,200);
 r=await handleApi(req('/private-payments/'+id+'/unlock','POST',{password:'newflower'},{'cf-connecting-ip':'different'}),env as any);assert.equal(r.status,403);
  }finally{env.sql.close()}});
+
+test('private pickup stays private and is retained after payment approval',async()=>{
+ const env=fixture();
+ try{
+  const data=await loadContent(env as any),id='pp_'+crypto.randomUUID(),pickupAt='2099-11-21T15:30',password='123456';
+  Object.assign(data.settings,{paymentsEnabled:true,policiesConfirmed:true,privacy:'개인정보',terms:'약관',refund:'환불',orderPrivacy:'주문 안내'});
+  data.privatePayments=[{id,title:'픽업 꽃 주문',amount:52000,active:true,pickupAt}];
+  env.sql.prepare("INSERT INTO content_blocks(block_key,payload_json) VALUES('STOREFRONT_V1',?)").run(JSON.stringify(data));
+  env.sql.prepare('INSERT INTO private_payment_credentials(entry_id,password_hash) VALUES(?,?)').run(id,await passwordHash(password));
+  const call=(path:string,method='GET',body?:any)=>handleApi(req(path,method,body),env as any);
+  assert.equal((await (await call('/public/content')).json() as any).privatePayments[0].pickupAt,undefined);
+  const unlocked=await call('/private-payments/'+id+'/unlock','POST',{password});
+  assert.equal(unlocked.status,200,await unlocked.clone().text());
+  const entry=(await unlocked.json() as any).entry;
+  assert.equal(entry.pickupAt,pickupAt);
+  const checkout=await call('/private-payments/'+id+'/checkout','POST',{proof:entry.checkoutProof,privacy:true,termsAgreed:true});
+  assert.equal(checkout.status,201,await checkout.clone().text());
+  const link=new URL((await checkout.json() as any).redirectUrl,origin);
+  const summary=()=>call('/payments/session?'+link.searchParams).then(r=>r.json()) as Promise<any>;
+  assert.equal((await summary()).fulfillmentAt,'2099-11-21 15:30:00');
+  const {settle}=await import('../lib/server/orders');
+  await settle(env as any,{orderId:link.searchParams.get('orderId'),paymentKey:'test-private-approval',totalAmount:52000,status:'DONE',currency:'KRW',method:'카드',approvedAt:'2026-11-11T12:00:00+09:00'});
+  const paid=await summary();
+  assert.equal(paid.status,'PAID');
+  assert.equal(paid.fulfillmentAt,'2099-11-21 15:30:00');
+ }finally{env.sql.close()}
+});

@@ -1,4 +1,5 @@
 import {Env,assert,body,json,sameOrigin,hash} from './types';
+import {validPrivatePickup} from '../../src/frontend/private-payment-data';
 import {verifyPassword} from './auth';
 export function publicContent(data:any){const reviewFeed=(data.reviewFeed||[]).filter((p:any)=>p.status==='published'&&p.privacyChecked===true&&p.permissionConfirmed===true);const allowed=new Set(reviewFeed.map((p:any)=>p.imageKey));const covers=Object.fromEntries(Object.entries(data.covers||{}).filter(([key,im]:any)=>!im?.src?.startsWith('/api/media/private/')&&(!key.startsWith('feed:')||allowed.has(key))));return {...data,covers,reviewFeed,privatePayments:(data.privatePayments||[]).filter((p:any)=>p.active).map((p:any)=>({id:p.id,title:p.title,active:true,locked:true}))}}
 
@@ -15,7 +16,7 @@ export async function privatePaymentUnlock(req:Request,env:Env,id:string,data:an
  const enabled=privatePaymentsEnabled(env,data);
  const expires=Date.now()+10*60*1000;
  const proof=enabled&&!order?.closed?expires+'.'+await unlockSignature(env,entry,credential.password_hash,expires):undefined;
- return json({entry:{id:entry.id,title:order?.title??entry.title,amount:order?.amount??entry.amount,active:true,checkoutProof:proof,closed:!!order?.closed,status:order?.status}});
+ return json({entry:{id:entry.id,title:order?.title??entry.title,amount:order?.amount??entry.amount,active:true,pickupAt:order?order.pickupAt?.slice(0,16).replace(' ','T'):entry.pickupAt,checkoutProof:proof,closed:!!order?.closed,status:order?.status}});
 }
 
 const orderNo=(id:string)=>'PP_'+id.slice(3);
@@ -23,11 +24,11 @@ const privatePaymentsEnabled=(env:Env,data:any)=>!!(env.PAYMENTS_ENABLED==='true
 async function unlockSignature(env:Env,entry:any,passwordHash:string,expires:number){
  const encode=new TextEncoder();
  const key=await crypto.subtle.importKey('raw',encode.encode(env.SESSION_SECRET),{name:'HMAC',hash:'SHA-256'},false,['sign']);
- const mac=await crypto.subtle.sign('HMAC',key,encode.encode(JSON.stringify(['private-payment',entry.id,entry.title,entry.amount,passwordHash,expires])));
+ const mac=await crypto.subtle.sign('HMAC',key,encode.encode(JSON.stringify(['private-payment',entry.id,entry.title,entry.amount,entry.pickupAt||null,passwordHash,expires])));
  return Array.from(new Uint8Array(mac),n=>n.toString(16).padStart(2,'0')).join('');
 }
 async function privateOrder(env:Env,id:string){
- const row=await env.DB.prepare('SELECT o.status order_status,o.payment_status status,o.total_krw amount,i.product_name_snapshot title FROM orders o JOIN order_items i ON i.order_id=o.id WHERE o.order_no=?').bind(orderNo(id)).first<{order_status:string;status:string;amount:number;title:string}>();
+ const row=await env.DB.prepare('SELECT o.status order_status,o.payment_status status,o.total_krw amount,o.fulfillment_at pickupAt,i.product_name_snapshot title FROM orders o JOIN order_items i ON i.order_id=o.id WHERE o.order_no=?').bind(orderNo(id)).first<{order_status:string;status:string;amount:number;title:string;pickupAt:string|null}>();
  return row?{...row,closed:row.order_status!=='PENDING_PAYMENT'||row.status!=='PENDING'}:null;
 }
 export async function privatePaymentCheckout(req:Request,env:Env,id:string,data:any){
@@ -43,21 +44,22 @@ export async function privatePaymentCheckout(req:Request,env:Env,id:string,data:
  assert(mismatch===0,403,'결제 항목이 변경되었습니다. 다시 열어주세요.');
  const no=orderNo(id),amount=entry.amount,title=entry.title;
  assert(Number.isSafeInteger(amount)&&amount>0&&amount<=10000000,400,'결제 금액을 확인해주세요.');
- const digest=await hash(JSON.stringify([id,title,amount]));
+ const pickupAt=validPrivatePickup(entry.pickupAt)?entry.pickupAt.replace('T',' ')+':00':null;
+ const digest=await hash(JSON.stringify([id,title,amount,pickupAt]));
  const access=await hash('private-checkout:'+no+':'+env.SESSION_SECRET);
  const snapshot='cms-'+data.revision;
  const open=async()=>{
   const order=await privateOrder(env,id);
   if(!order)return false;
   assert(!order.closed,409,'이미 결제가 완료되었거나 종료된 항목입니다.');
-  assert(order.amount===amount&&order.title===title,409,'결제 준비 후 항목이 변경되었습니다. 매장에 문의해주세요.');
+  assert(order.amount===amount&&order.title===title&&order.pickupAt===pickupAt,409,'결제 준비 후 항목이 변경되었습니다. 매장에 문의해주세요.');
   await env.DB.prepare("UPDATE checkout_requests SET expires_at=datetime('now','+24 hours') WHERE order_no=?").bind(no).run();
   return true;
  };
  if(!await open()){
   try{
    await env.DB.batch([
-    env.DB.prepare("INSERT INTO orders(order_no,status,payment_status,fulfillment_type,orderer_name,orderer_phone,subtotal_krw,total_krw) VALUES(?,'PENDING_PAYMENT','PENDING','SERVICE','개인고객','',?,?)").bind(no,amount,amount),
+    env.DB.prepare("INSERT INTO orders(order_no,status,payment_status,fulfillment_type,orderer_name,orderer_phone,subtotal_krw,total_krw,fulfillment_at) VALUES(?,'PENDING_PAYMENT','PENDING','SERVICE','개인고객','',?,?,?)").bind(no,amount,amount,pickupAt),
     env.DB.prepare('INSERT INTO order_items(order_id,product_name_snapshot,unit_price_krw,line_total_krw) SELECT id,?,?,? FROM orders WHERE order_no=?').bind(title,amount,amount,no),
     env.DB.prepare("INSERT INTO payments(order_id,provider,provider_order_id,amount_krw) SELECT id,'TOSS',?,? FROM orders WHERE order_no=?").bind(no,amount,no),
     env.DB.prepare("INSERT INTO order_consents(order_id,consent_type,is_agreed,policy_version,evidence_json) SELECT id,'PRIVACY',1,?,? FROM orders WHERE order_no=?").bind(snapshot,JSON.stringify({termsAgreed:true,privacyAgreed:true,termsVersion:snapshot,recordedAt:new Date().toISOString(),policies:{terms:data.settings.terms,privacy:data.settings.privacy,orderPrivacy:data.settings.orderPrivacy,refund:data.settings.refund}}),no),
@@ -75,5 +77,5 @@ export async function adminPaymentContent(env:Env,data:any){
   env.DB.prepare("SELECT order_no,payment_status FROM orders WHERE order_no GLOB 'PP_*'").all<{order_no:string;payment_status:string}>(),
  ]);
  const ids=new Set(credentials.results.map(p=>p.entry_id)), statuses=new Map(orders.results.map(p=>[p.order_no,p.payment_status]));
- return {...data,privatePayments:(data.privatePayments||[]).map((p:any)=>({id:p.id,title:p.title,amount:p.amount,active:p.active,hasPassword:ids.has(p.id),paymentStatus:statuses.get(orderNo(p.id)),orderNo:statuses.has(orderNo(p.id))?orderNo(p.id):undefined}))};
+ return {...data,privatePayments:(data.privatePayments||[]).map((p:any)=>({id:p.id,title:p.title,amount:p.amount,pickupAt:p.pickupAt||null,active:p.active,hasPassword:ids.has(p.id),paymentStatus:statuses.get(orderNo(p.id)),orderNo:statuses.has(orderNo(p.id))?orderNo(p.id):undefined}))};
 }

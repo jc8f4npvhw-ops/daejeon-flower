@@ -2,7 +2,7 @@ import {AnniversaryChoice,newAnniversaryDraft,anniversaryTitle,draftReady} from 
 import React,{useRef,useState} from 'react';
 import {KakaoFriendButton} from './kakao-friend-button';
 export type CompletedPayment={orderNo:string;orderName?:string;orderStyle?:string|null;orderVariant?:string|null;fulfillmentType?:string;fulfillmentAt?:string|null;amount:number;anniversary?:{couponReady:boolean;validDays:number;channelUrl:string;policyVersion:string}};
-function receiptDate(value?:string|null){
+export function receiptDate(value?:string|null){
  const date=value?.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})/);
  if(!date)return null;
  const scheduled=new Date(date[1]+'T'+date[2]+':00+09:00');
@@ -32,7 +32,7 @@ export function PaymentSuccess({payment,access,request=paymentRegistrationReques
  </header>
  <section className="payment-order-card" aria-label="주문 상세">
   <div className="payment-order-product"><span>주문 상품</span><h2>{payment.orderName||'주문 상품 정보'}</h2>{options&&<p>{options}</p>}</div>
-  {!privatePayment&&payment.fulfillmentType&&<div className="payment-order-schedule"><span>{delivery?'배송 예정 일시':'매장 픽업 일시'}</span>{schedule?<><strong>{schedule.date}</strong><p>{schedule.time}</p></>:<strong>{delivery?'일정은 매장에 문의해주세요':'픽업 일정은 매장에 문의해주세요'}</strong>}</div>}
+  {(privatePayment?!!schedule:!!payment.fulfillmentType)&&<div className="payment-order-schedule"><span>{delivery?'배송 예정 일시':'매장 픽업 일시'}</span>{schedule?<><strong>{schedule.date}</strong><p>{schedule.time}</p></>:<strong>{delivery?'일정은 매장에 문의해주세요':'픽업 일정은 매장에 문의해주세요'}</strong>}</div>}
   <dl className="payment-success-receipt"><div><dt>결제 금액</dt><dd><b>{Number(payment.amount).toLocaleString('ko-KR')}원</b></dd></div><div><dt>주문번호</dt><dd>{payment.orderNo}</dd></div></dl>
  </section>
  {!privatePayment&&<section className="payment-moment-invite" aria-label="결제 후 기념일 등록"><h2>기념일을 남겨둘까요?</h2>{benefit?<><p>기념일을 등록해두시면<br/>다음 기념일부터 <strong>3일 전,</strong></p><div className="payment-coupon-amount"><span>매년 기념일 할인쿠폰</span><strong>2,000<small>원</small></strong></div><p>등록한 날짜에 맞춰 쿠폰을 발급해드려요.</p></>:<p>소중한 날짜를 남겨두고<br/>원하시면 3일 전 카카오 알림도 신청하세요.</p>}

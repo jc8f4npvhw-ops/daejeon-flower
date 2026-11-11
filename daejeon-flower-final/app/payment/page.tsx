@@ -62,7 +62,7 @@ export default function Payment(){
  if(completed)return <main className="app-shell payment-success-shell"><PaymentSuccess payment={completed} access={access}/></main>;
  const when=schedule(data?.fulfillmentAt),amount=Number(data?.amount??data?.total??0);
  const options=[data?.orderStyle,data?.orderVariant].filter(Boolean).join(' · ');
- const method=data?.fulfillmentType==='DELIVERY'?'배송':data?.fulfillmentType==='PICKUP'?'매장 픽업':null;
+ const method=data?.fulfillmentType==='DELIVERY'?'배송':data?.fulfillmentType==='PICKUP'||(data?.orderId?.startsWith('PP_')&&when)?'매장 픽업':null;
  return <main className="checkout-pay">
   <header className="checkout-pay-header"><a href="/">대전꽃백화점</a><span>안전 결제</span></header>
   <h1>{data?.quote?'배송비 확인':'결제하기'}</h1>

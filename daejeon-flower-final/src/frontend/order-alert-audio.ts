@@ -2,7 +2,7 @@
 export const ORDER_ALERT_REPEAT_MS=2500;
 export const ORDER_ALERT_MAX_GAIN=.85;
 export function orderAlertAudio(){
- let context:AudioContext|null=null,gain:GainNode|null=null,volume=.7;
+ let context:AudioContext|null=null,gain:GainNode|null=null,volume=1;
  const tones:OscillatorNode[]=[];
  const stop=()=>{for(const o of tones.splice(0)){try{o.stop()}catch{}}};
  return {
