@@ -11,6 +11,15 @@ function kakaoConsent(response:any,id:string){
  return {terms:agreed(syncTerms.terms),privacy:agreed(syncTerms.privacy)};
 }
 
+async function saveMissingKakaoTerms(env:Env,customerId:number,evidence:{terms?:string;privacy?:string}){
+ const statements=[];
+ for(const kind of ['terms','privacy'] as const){
+  const agreedAt=evidence[kind];
+  if(agreedAt)statements.push(env.DB.prepare('INSERT INTO kakao_member_term_consents(customer_id,tag,policy_version,agreed_at) VALUES(?,?,?,?) ON CONFLICT(customer_id,tag) DO NOTHING').bind(customerId,syncTerms[kind],memberPolicy,agreedAt));
+ }
+ if(statements.length)await env.DB.batch(statements);
+}
+
 export function kakaoPhone(value:unknown){let s=typeof value==='string'?value.replace(/[^0-9]/g,''):'';if(s.startsWith('8201'))s=s.slice(2);return normalizePhone(s)}
 const cookieValue=(req:Request,name:string)=>(req.headers.get('cookie')||'').split(';').map(v=>v.trim()).find(v=>v.startsWith(name+'='))?.slice(name.length+1)||'';
 const setCookie=(name:string,raw:string,maxAge:number,lax=false)=>name+'='+raw+'; Path=/; Secure; HttpOnly; SameSite='+(lax?'Lax':'Strict')+'; Max-Age='+maxAge;
@@ -41,13 +50,18 @@ export async function kakaoLoginApi(req:Request,env:Env,path:string):Promise<Res
   try{
    const access=await provider('https://kauth.kakao.com/oauth/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',client_id:env.KAKAO_REST_API_KEY!,client_secret:env.KAKAO_CLIENT_SECRET!,redirect_uri:base+'/api/auth/kakao/callback',code})});assert(typeof access.access_token==='string',502,'카카오 인증을 다시 시도해주세요.');
    const profile=await provider('https://kapi.kakao.com/v2/user/me',{headers:{Authorization:'Bearer '+access.access_token}});assert(Number.isSafeInteger(profile.id)&&profile.id>0,502,'카카오 회원 정보를 확인해주세요.');const id=String(profile.id);
-   const member:any=await env.DB.prepare('SELECT customer_id FROM kakao_members WHERE kakao_id=?').bind(id).first();if(member)return redirect('/account',await signedIn(env,member.customer_id));
+   const member:any=await env.DB.prepare('SELECT customer_id FROM kakao_members WHERE kakao_id=?').bind(id).first();
    const a=profile.kakao_account||{},phone=a.phone_number_needs_agreement?'':kakaoPhone(a.phone_number),birthday=!a.birthday_needs_agreement&&a.birthday_type==='SOLAR'&&/^\d{4}$/.test(a.birthday||'')?a.birthday.slice(0,2)+'-'+a.birthday.slice(2):'';
    let syncConsent:{terms?:string;privacy?:string}={};
    if(env.KAKAO_SYNC_ENABLED==='true'){
     const termsUrl=new URL('https://kapi.kakao.com/v2/user/service_terms');
     termsUrl.searchParams.set('tags',Object.values(syncTerms).join(','));
-    try{syncConsent=kakaoConsent(await provider(termsUrl.href,{headers:{Authorization:'Bearer '+access.access_token}}),id)}catch{/* Fall back to the site's own consent form. */}
+    try{syncConsent=kakaoConsent(await provider(termsUrl.href,{headers:{Authorization:'Bearer '+access.access_token}}),id)}catch{console.warn('KAKAO_SYNC_CONSENT_FETCH_FAILED')}
+   }
+   if(member){
+    try{await saveMissingKakaoTerms(env,member.customer_id,syncConsent)}
+    catch{console.error('KAKAO_SYNC_CONSENT_SAVE_FAILED')}
+    return redirect('/account',await signedIn(env,member.customer_id));
    }
    const claims={syncConsent,name:!a.name_needs_agreement&&typeof a.name==='string'?a.name.slice(0,50):'',phone:/^01\d{8,9}$/.test(phone)?phone:'',birthday:validBirthday(birthday)?birthday:''};
    const raw=token();await env.DB.prepare("INSERT INTO kakao_signup_sessions(token_hash,kakao_id,claims_json,expires_at) VALUES(?,?,?,datetime('now','+15 minutes'))").bind(await hash(raw),id,JSON.stringify(claims)).run();
