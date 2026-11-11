@@ -1,9 +1,11 @@
 import Client from './client';
-import {catalog} from '../src/frontend/catalog-assets';
+import {homeHeroImages} from '../src/frontend/home-hero-assets';
 import {optimizedMedia} from '../src/frontend/optimized-media';
 
 export default function Page(){
- const hero=catalog.find(photo=>photo.role==='hero');
- const initialPhoto=hero?optimizedMedia[hero.src]?.[0]?.src:undefined;
- return <Client initialPhoto={initialPhoto}/>;
+ const hero=homeHeroImages[0];
+ const variants=optimizedMedia[hero];
+ const initialPhoto=hero;
+ const initialSrcSet=variants?.map(v=>v.src+' '+v.width+'w').join(', ');
+ return <Client initialPhoto={initialPhoto} initialSrcSet={initialSrcSet}/>;
 }
