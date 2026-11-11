@@ -47,8 +47,8 @@ export async function anniversaryApi(req:Request,env:Env,path:string):Promise<Re
  if(path==='/anniversaries'||path.startsWith('/anniversaries/')){
   const u=await anniversaryMember(req,env),cid=u.customer_id;
   if(path==='/anniversaries'&&req.method==='GET'){
-   const [p,c,rows]:any[]=await Promise.all([env.DB.prepare('SELECT marketing,channel_friend FROM anniversary_reminder_preferences WHERE customer_id=?').bind(cid).first(),env.DB.prepare('SELECT name,phone_normalized FROM customers WHERE id=?').bind(cid).first(),env.DB.prepare('SELECT id,label,month,day,notify,relationship,occasion,memo,start_date FROM anniversary_reminders WHERE customer_id=? AND deleted=0 ORDER BY month,day').bind(cid).all()]);
-   return json({csrf:u.csrf,name:c?.name||'고객',phoneSuffix:normalizePhone(c?.phone_normalized||'').slice(-4),preferences:p||{marketing:0,channel_friend:0},rows:rows.results,policyVersion:reminderPolicy,channelUrl:kakaoLinks((await loadContent(env)).settings.kakao||'').home,benefits:{anniversaryCouponReady:await couponBenefitReady(env),amount:2000},mode:mode(env)});
+   const [p,c,rows]:any[]=await Promise.all([env.DB.prepare('SELECT marketing,channel_friend FROM anniversary_reminder_preferences WHERE customer_id=?').bind(cid).first(),env.DB.prepare('SELECT name FROM customers WHERE id=?').bind(cid).first(),env.DB.prepare('SELECT id,label,month,day,notify,relationship,occasion,memo,start_date FROM anniversary_reminders WHERE customer_id=? AND deleted=0 ORDER BY month,day').bind(cid).all()]);
+   return json({csrf:u.csrf,name:c?.name||'고객',preferences:p||{marketing:0,channel_friend:0},rows:rows.results,policyVersion:reminderPolicy,channelUrl:kakaoLinks((await loadContent(env)).settings.kakao||'').home,benefits:{anniversaryCouponReady:await couponBenefitReady(env),amount:2000},mode:mode(env)});
   }
   if(path==='/anniversaries/consent'&&req.method==='PUT'){
    const b=await body(req,1024);assert(typeof b.marketing==='boolean'&&typeof b.channelFriend==='boolean'&&b.policyVersion===reminderPolicy,400,'수신 설정 안내를 확인해주세요.');

@@ -1,6 +1,7 @@
+import {approvedOrder} from './approved-order';
 import {admin} from './auth';
 import {Env,assert,json} from './types';
-const pending="o.payment_status IN ('PAID','PARTIAL_REFUND') AND o.status IN ('NEW','IN_PRODUCTION') AND NOT EXISTS(SELECT 1 FROM order_alert_acknowledgements a WHERE a.order_id=o.id)";
+const pending=`${approvedOrder} AND o.payment_status IN ('PAID','PARTIAL_REFUND') AND o.status IN ('NEW','IN_PRODUCTION') AND NOT EXISTS(SELECT 1 FROM order_alert_acknowledgements a WHERE a.order_id=o.id)`;
 export async function orderAlerts(req:Request,env:Env,path:string):Promise<Response|null>{
  const match=path.match(/^\/admin\/order-alerts\/(\d+)\/acknowledge$/);
  if(!(path==='/admin/order-alerts'&&req.method==='GET')&&!(match&&req.method==='POST'))return null;

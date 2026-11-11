@@ -1,0 +1,15 @@
+.checkout-pay{box-sizing:border-box;max-width:650px;min-height:100vh;margin:0 auto;padding:24px 22px max(26px,env(safe-area-inset-bottom));font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif;color:#18242e}
+.checkout-pay-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:32px}
+.checkout-pay-header a{font-weight:750;text-decoration:none;color:inherit}
+.checkout-pay-header span{border-radius:999px;background:#e9f1fb;color:#285680;padding:5px 11px;font-size:.82rem;font-weight:700}
+.checkout-pay h1{font-size:clamp(28px,5vw,38px);line-height:1.2;margin:0 0 8px}
+.checkout-pay-status{color:#52606b;margin:0 0 20px;line-height:1.5}
+.checkout-pay-card{background:#fff;border:1px solid #e0e7ec;border-radius:18px;padding:20px;margin-bottom:14px}
+.checkout-pay-total{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:17px;border-bottom:1px solid #edf0f3}
+.checkout-pay-total strong{font-size:clamp(23px,5vw,31px);color:#163a5b}
+.checkout-pay dl{margin:12px 0 0}.checkout-pay dl div{display:flex;justify-content:space-between;gap:14px;padding:7px 0}
+.checkout-pay dt{color:#52606b;flex-shrink:0}.checkout-pay dd{margin:0;text-align:right;font-weight:650;overflow-wrap:anywhere}.checkout-pay dd small{display:block;font-weight:450;color:#52606b;margin-top:3px}
+.checkout-pay-methods h2{font-size:1.14rem;margin:0 0 10px}.checkout-pay-methods p{color:#52606b}
+.checkout-pay-actions{display:grid;gap:10px}.checkout-pay-button{width:100%;min-height:52px;border:0;border-radius:12px;background:#176be0;color:#fff;font:inherit;font-weight:750;cursor:pointer}.checkout-pay-button:disabled{background:#dce5ef;color:#465d72;cursor:default}
+.checkout-pay-footer{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 22px;margin-top:23px;color:#52606b;font-size:.87rem}
+@media(max-width:420px){.checkout-pay{padding-inline:15px}.checkout-pay-card{padding:16px}.checkout-pay-header{margin-bottom:24px}}
