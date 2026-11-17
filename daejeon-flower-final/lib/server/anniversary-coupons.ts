@@ -24,7 +24,7 @@ export async function couponContext(env:Env,b:any,trustedCustomerId?:number){
 export async function couponApi(req:Request,env:Env,path:string):Promise<Response|null>{
  if(path==='/anniversaries/coupons'&&req.method==='GET'){
   const u=await anniversaryMember(req,env),expires=Date.now()+15*60000;
-  const rows=await env.DB.prepare(`SELECT c.*,COALESCE((SELECT r.status FROM anniversary_coupon_redemptions r WHERE r.coupon_id=c.id AND r.status!='RELEASED' LIMIT 1),CASE WHEN c.expires_date<date('now','+9 hours') THEN 'EXPIRED' ELSE 'AVAILABLE' END) status FROM anniversary_coupons c WHERE c.customer_id=? ORDER BY c.issued_date DESC,c.id LIMIT 100`).bind(u.customer_id).all<any>();
+  const rows=await env.DB.prepare(`SELECT c.*,COALESCE((SELECT r.status FROM anniversary_coupon_redemptions r WHERE r.coupon_id=c.id AND r.status IN ('VERIFYING','USED') LIMIT 1),CASE WHEN c.expires_date<date('now','+9 hours') THEN 'EXPIRED' ELSE 'AVAILABLE' END) status FROM anniversary_coupons c WHERE c.customer_id=? ORDER BY c.issued_date DESC,c.id LIMIT 100`).bind(u.customer_id).all<any>();
   const ready=await couponBenefitReady(env);return json({ready,rows:await Promise.all(rows.results.map(async c=>({...c,proof:ready&&c.status==='AVAILABLE'?u.customer_id+'.'+expires+'.'+await hmac(env.SESSION_SECRET,c.id+':'+u.customer_id+':'+expires):null}))),terms:{amount:2000,perOrder:1,deliveryExcluded:true}});
  }
  if(path==='/admin/anniversary-coupons/settings'&&req.method==='PUT'){

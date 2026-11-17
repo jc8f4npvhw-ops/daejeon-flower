@@ -163,7 +163,12 @@ function orchidProductPhoto(size:string,style=''){
 }
 function bestsellerPhoto(p:{product:string;style?:string;size:string}){
  if(p.product==='동양난'&&orientalOrchids.some(o=>o.size===p.size))return orchidProductPhoto(p.size,p.style);
- return findPhotos(p.product,p.style||undefined,p.size)[0]?.src||cover(p.product)?.src;
+ const style=p.style||'';
+ const exact=cms.galleries?.[galleryKey(p.product,style,p.size)];
+ const pinned=exact?.find((image:any)=>image.pinned&&image.src);
+ return pinned?.src||exact?.at(-1)?.src||cms.covers?.[p.product]?.src
+  ||findPhotos(p.product,style,p.size)[0]?.src
+  ||cms.galleries?.[galleryKey(p.product,'','')]?.at(-1)?.src||cover(p.product)?.src;
 }
 function labelPhotos(label:string){
  if(label==='JUST ROSE 30')return findPhotos('JUST ROSE',undefined,'30송이');
