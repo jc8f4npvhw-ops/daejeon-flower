@@ -2,10 +2,13 @@ import {test} from 'node:test';import assert from 'node:assert/strict';
 import {rankProducts,salesKey} from '../src/frontend/bestseller-ranking';
 import {publicBestsellers} from '../lib/server/bestsellers';
 import {fixture} from './helpers';
-test('flower M choices stay first and second while other SKUs follow actual sales',()=>{
+test('sales determine default rank; manual placements take precedence and stale keys are ignored',()=>{
  const rows=['대전꽃백화점 스타일','바이닐 스타일'].flatMap(style=>['S','M','L','XL','SPECIAL'].map(size=>({product:'꽃다발',style,size})));
  const sales={[salesKey(rows[9])]:500,[salesKey(rows[2])]:20};
- const ranked=rankProducts(rows,sales,true);assert.equal(ranked.length,10);assert.deepEqual(ranked.slice(0,2).map(salesKey),[salesKey(rows[1]),salesKey(rows[6])]);assert.equal(ranked[2],rows[9]);assert.equal(ranked[3],rows[2]);
+ const ranked=rankProducts(rows,sales,true);assert.equal(ranked.length,10);
+ assert.deepEqual(ranked.slice(0,4),[rows[9],rows[2],rows[1],rows[6]]);
+ assert.deepEqual(rankProducts(rows,sales,true,[salesKey(rows[6]),'missing',salesKey(rows[6])]).slice(0,3),[rows[6],rows[9],rows[2]]);
+ assert.deepEqual(rankProducts(rows,sales,true,[]),ranked);
  assert.equal(rankProducts(rows,sales,false)[0],rows[9]);
 });
 test('public sales exclude unpaid, cancelled, refunded and old orders and reveal no customer data',async()=>{
