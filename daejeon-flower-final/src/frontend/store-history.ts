@@ -21,6 +21,7 @@ export function createStoreHistory<T>(win:Window,initial:T,restore:(view:T)=>voi
    ++token;pending=false;entry={...entry,scrollY:win.scrollY};write('replaceState',entry);
    entry={owner,depth:entry.depth+1,view,scrollY:0};write('pushState',entry,url);
   },
+  replace(view:T,url?:string){++token;pending=false;entry={...entry,view,scrollY:0};write('replaceState',entry,url)},
   back(){if(entry.depth===0)return false;if(!pending){pending=true;win.history.back()}return true},
   dispose(){++token;win.removeEventListener('popstate',pop);win.history.scrollRestoration=oldRestoration},
  };

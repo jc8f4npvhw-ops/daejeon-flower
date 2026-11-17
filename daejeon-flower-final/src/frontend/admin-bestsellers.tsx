@@ -1,3 +1,4 @@
+import {categoryVisible} from './free-categories';
 import React,{useEffect,useState} from 'react';
 import {bestsellerRows,rankProducts,salesKey,type BestsellerGroup} from './bestseller-ranking';
 
@@ -20,7 +21,7 @@ export function AdminBestsellers({draft,busy,apiBase,live,onChange}:{
   });
   return()=>controller.abort();
  },[live,apiBase]);
- const rows=bestsellerRows(draft,group),byKey=new Map<string,any>(rows.map((p:any)=>[salesKey(p),p]));
+ const rows=bestsellerRows(draft,group,code=>categoryVisible(draft,code)),byKey=new Map<string,any>(rows.map((p:any)=>[salesKey(p),p]));
  const configured=draft.bestsellerOrder?.[group];
  const keys:string[]=Array.isArray(configured)?[...new Set<string>(configured.filter(k=>byKey.has(k)))].slice(0,10):[];
  const available=rows.filter((p:any)=>!keys.includes(salesKey(p))).sort((a:any,b:any)=>label(a).localeCompare(label(b),'ko'));
@@ -31,5 +32,5 @@ export function AdminBestsellers({draft,busy,apiBase,live,onChange}:{
  <h3>우선 노출 순서</h3>{keys.length?<ol>{keys.map((key,index)=><li key={key}>{label(byKey.get(key))} <button type="button" disabled={busy||index===0} aria-label={label(byKey.get(key))+' 위로'} onClick={()=>move(index,-1)}>↑</button> <button type="button" disabled={busy||index===keys.length-1} aria-label={label(byKey.get(key))+' 아래로'} onClick={()=>move(index,1)}>↓</button> <button type="button" disabled={busy} onClick={()=>onChange(group,keys.filter(k=>k!==key))}>우선 노출 해제</button></li>)}</ol>:<p>판매량에 따라 자동으로 정렬하고 있어요.</p>}
  <label className="m-field"><span>우선 노출할 상품</span><select value={choice} onChange={e=>setChoice(e.target.value)} disabled={busy||keys.length>=10}><option value="">상품 선택</option>{available.map((p:any)=><option key={salesKey(p)} value={salesKey(p)}>{label(p)}</option>)}</select></label>
  <div className="m-actions"><button type="button" disabled={busy||keys.length>=10||!available.some((p:any)=>salesKey(p)===choice)} onClick={()=>{onChange(group,[...keys,choice]);setChoice('')}}>우선 노출에 추가</button><button type="button" disabled={busy||!keys.length} onClick={()=>onChange(group,[])}>판매량 순으로 되돌리기</button></div>
- <h3>고객 화면 순서 미리보기</h3>{status&&<p role="status">{status}</p>}<ol>{preview.map(p=><li key={salesKey(p)}>{label(p)}{keys.includes(salesKey(p))?' · 우선 노출':''}{!status?' · 판매 '+(sales[salesKey(p)]||0)+'건':''}</li>)}</ol><p className="m-help">순서를 변경한 뒤 ‘저장하고 적용’을 눌러주세요.</p></section>;
+ <h3>고객 화면 상위 10개 미리보기</h3>{status&&<p role="status">{status}</p>}<ol>{preview.map(p=><li key={salesKey(p)}>{label(p)}{keys.includes(salesKey(p))?' · 우선 노출':''}{!status?' · 판매 '+(sales[salesKey(p)]||0)+'건':''}</li>)}</ol><p className="m-help">순서를 변경한 뒤 ‘저장하고 적용’을 눌러주세요.</p></section>;
 }
