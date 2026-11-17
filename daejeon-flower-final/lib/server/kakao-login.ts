@@ -21,6 +21,20 @@ async function saveMissingKakaoTerms(env:Env,customerId:number,evidence:{terms?:
  if(statements.length)await env.DB.batch(statements);
 }
 
+// A provider-confirmed number may fill an empty member record, never merge customers.
+async function linkReturningMemberPhone(env:Env,customerId:number,kakaoId:string,phone:string){
+ if(!/^01\d{8,9}$/.test(phone))return;
+ await env.DB.batch([
+  env.DB.prepare(`UPDATE customers SET phone_normalized=?
+   WHERE id=? AND phone_normalized IS NULL
+    AND EXISTS(SELECT 1 FROM kakao_members WHERE customer_id=? AND kakao_id=?)
+    AND NOT EXISTS(SELECT 1 FROM customers WHERE phone_normalized=? AND id<>?)`).bind(phone,customerId,customerId,kakaoId,phone,customerId),
+  env.DB.prepare(`UPDATE kakao_members SET contact_phone=?,phone_verified=1
+   WHERE customer_id=? AND kakao_id=? AND (contact_phone IS NOT ? OR phone_verified<>1)
+    AND EXISTS(SELECT 1 FROM customers WHERE id=? AND phone_normalized=?)`).bind(phone,customerId,kakaoId,phone,customerId,phone)
+ ]);
+}
+
 export function kakaoPhone(value:unknown){let s=typeof value==='string'?value.replace(/[^0-9]/g,''):'';if(s.startsWith('8201'))s=s.slice(2);return normalizePhone(s)}
 const cookieValue=(req:Request,name:string)=>(req.headers.get('cookie')||'').split(';').map(v=>v.trim()).find(v=>v.startsWith(name+'='))?.slice(name.length+1)||'';
 const setCookie=(name:string,raw:string,maxAge:number,lax=false)=>name+'='+raw+'; Path=/; Secure; HttpOnly; SameSite='+(lax?'Lax':'Strict')+'; Max-Age='+maxAge;
@@ -60,6 +74,8 @@ export async function kakaoLoginApi(req:Request,env:Env,path:string):Promise<Res
     try{syncConsent=kakaoConsent(await provider(termsUrl.href,{headers:{Authorization:'Bearer '+access.access_token}}),id)}catch{console.warn('KAKAO_SYNC_CONSENT_FETCH_FAILED')}
    }
    if(member){
+    try{await linkReturningMemberPhone(env,member.customer_id,id,phone)}
+    catch{console.error('KAKAO_MEMBER_PHONE_LINK_FAILED')}
     try{await saveMissingKakaoTerms(env,member.customer_id,syncConsent)}
     catch{console.error('KAKAO_SYNC_CONSENT_SAVE_FAILED')}
     return redirect('/account',await signedIn(env,member.customer_id));
