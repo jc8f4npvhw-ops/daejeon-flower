@@ -1,4 +1,3 @@
-import {sizeGalleryPhotos} from './size-gallery-data';
 "use client";
 import {DateInput} from './korean-calendar';
 import {useMemberOrderPrefill} from './member-order-prefill';
@@ -11,7 +10,7 @@ import {Bestsellers,OccasionDiscovery,HeroPhotos} from './home-discovery';
 import {occasionPhotos} from './occasion-photos';
 import {kakaoLinks} from './kakao-channel';
 import {orientalOrchids,orchidPhotoKey} from './oriental-orchid-data';
-import {SizePhotoGallery,StylePhotoStrip,RecentProductPhotos} from './size-photo-gallery';
+import {SizePhotoGallery,SizePhotoDialog,StylePhotoStrip,RecentProductPhotos} from './size-photo-gallery';
 import {PrivatePaymentPage} from './private-payment-page';
 import {categoryNodes,categoryAncestors,categoryVisible} from './free-categories';
 import {OrderConsents} from './order-consents';
@@ -534,7 +533,7 @@ export default function Home() {
   const routeTitle = useMemo(() => route.kind === "main" ? route.main : route.kind === "occasion" ? route.occasion : "home", [route]);
   useEffect(()=>{document.title=memberOpen?"대전꽃백화점 · 마이페이지":routeTitle==="home"?"대전꽃백화점 · 꽃과 식물":"대전꽃백화점 · "+routeTitle},[routeTitle,memberOpen]);
   if (!entered) return <><div className="app-shell"><Landing enter={() => { setEntered(true); setTimeout(() => window.scrollTo({ top: 0 }), 0); }} consult={() => setConsult(true)} /></div>{consult && <ConsultSheet close={() => setConsult(false)} />}</>;
-  return <PageSelection.Provider value={selectPage}><main>{memberOpen&&<MemberPortal close={()=>setMemberOpen(false)} shop={()=>{setMemberOpen(false);navigate({kind:'main',main:'FLOWER'})}} settings={cms.settings} preview={!live} photos={{꽃다발:cover('꽃다발')?.src,꽃바구니:cover('꽃바구니')?.src}}/>}<div className="app-shell" style={{display:memberOpen?'none':undefined}}><header className="site-header"><button className="wordmark" onClick={() => navigate({ kind: "home" })}><div className="wordmark-ko">대전꽃백화점</div><div className="wordmark-en">DAEJEON FLOWER DEPARTMENT STORE</div></button><div className="header-actions"><button className="header-action" onClick={()=>{if(live){window.location.assign('/account');return}setMemberOpen(true);window.scrollTo({top:0,behavior:'auto'})}}>마이페이지</button><button className="header-action" onClick={() => setConsult(true)}>상담</button></div></header>{route.kind==="home"&&<StoreHome navigate={navigate} consult={() => setConsult(true)}/>}<div className="content" style={{display:route.kind === "home"?"none":"block"}}><button className="back-btn" onClick={back}>{preview?'← 상품 사진·구성 보기':'← 뒤로가기'}</button>{[route].filter(x=>x.kind!=="home").map((x,i)=><StepReveal as="div" motionKey={JSON.stringify(x)===JSON.stringify(route)} className="route-panel" key={JSON.stringify(x)} style={{display:JSON.stringify(x)===JSON.stringify(route)?"block":"none"}}>{x.kind==="main"?(preview?<BestsellerPreview row={preview} onOrder={()=>{
+  return <PageSelection.Provider value={selectPage}><main>{memberOpen&&<MemberPortal close={()=>setMemberOpen(false)} shop={()=>{setMemberOpen(false);navigate({kind:'main',main:'FLOWER'})}} settings={cms.settings} preview={!live} photos={{꽃다발:cover('꽃다발')?.src,꽃바구니:cover('꽃바구니')?.src}}/>}<div className="app-shell" style={{display:memberOpen?'none':undefined}}><header className="site-header"><button className="wordmark" onClick={() => navigate({ kind: "home" })}><div className="wordmark-ko">대전꽃백화점</div><div className="wordmark-en">DAEJEON FLOWER DEPARTMENT STORE</div></button><div className="header-actions"><button className="header-action" onClick={()=>{if(live){window.location.assign('/account');return}setMemberOpen(true);window.scrollTo({top:0,behavior:'auto'})}}>마이페이지</button><button className="header-action" onClick={() => setConsult(true)}>상담</button></div></header>{route.kind==="home"&&<StoreHome navigate={navigate} consult={() => setConsult(true)}/>}<div className="content" style={{display:route.kind === "home"?"none":"block"}}><button className="back-btn" onClick={back}>{preview?'← 상품 사진·구성 보기':'← 뒤로가기'}</button>{[route].filter(x=>x.kind!=="home").map((x,i)=><StepReveal as="div" motionKey={JSON.stringify(x)===JSON.stringify(route)} className="route-panel" key={JSON.stringify(x)} style={{display:JSON.stringify(x)===JSON.stringify(route)?"block":"none"}}>{x.kind==="main"?(preview?<BestsellerPreview row={preview} onClose={back} onOrder={()=>{
     finderSelection={...finderSelection,bestsellerPreview:null,bestsellerGuide:false,quickOrder:true};
     navigate(x,true);
    }}/>:<MainPage key={JSON.stringify(x)===JSON.stringify(route)?routeVersion:JSON.stringify(x)} main={x.main} paymentId={x.paymentId}/>):x.kind==="occasion"?<OccasionPage occasion={x.occasion} navigate={navigate}/>:null}</StepReveal>)}</div>{route.kind==='home'&&<section className="section"><a href="/plant-care.html" style={{display:'block',padding:'24px',border:'1px solid #cbd5bf',borderRadius:16,color:'#273e32',background:'#f0f2ec',textDecoration:'none'}}><strong style={{fontSize:21}}>반려식물 관리 가이드 →</strong><p style={{marginTop:8}}>우리 식물, 어떻게 키울까요?<br/>물주기부터 빛과 온도까지 살펴보세요.</p></a></section>}{route.kind==='home'&&<PublicPhotoJournal data={cms}/>}<Footer /></div>{consult && <ConsultSheet close={() => setConsult(false)} />}<div style={{ display: "none" }}>{routeTitle}</div></main></PageSelection.Provider>;
@@ -579,13 +578,15 @@ const sizeMeaning:any={S:'가볍게 건네는 작은 선물',M:'축하와 감사
 const budgetRanges=[{id:'30000-40000',min:30000,max:40000,label:'30,000–40,000원'},{id:'50000-70000',min:50000,max:70000,label:'50,000–70,000원'},{id:'100000-150000',min:100000,max:150000,label:'100,000–150,000원'},{id:'150000-300000',min:150000,max:300000,label:'150,000–300,000원'}];
 function pricedGifts(){return cms.products.filter((p:any)=>active(p.id)&&p.mode==='order'&&sectionOpen(p.group)).flatMap((p:any)=>p.variants.filter((v:any)=>v.active&&v.price!==null).map((v:any)=>{const plant=p.group==='PLANT'&&!['동양난','서양난'].includes(p.id);return {name:p.name+(v.size?' '+v.size:''),detail:v.style||p.name,price:v.price,main:p.group,customProductId:p.custom?p.id:undefined,category:plant?'관엽화분':p.id,plant:plant?p.id:undefined,size:v.size,style:v.style,variant:p.id==='JUST ROSE'?parseInt(v.size):v.size,photo:v.style?`${p.id} · ${v.style} · ${v.size}`:p.id==='서양난'?`서양난 · 예산 · ${v.size}`:p.id==='동양난'?v.size:`${p.id} ${v.size}`,fulfillment:p.id==='꽃다발'&&v.size==='S'?'픽업 전용':p.pickup&&p.delivery?'픽업 / 배송':p.pickup?'픽업 전용':'배송 전용'};}));}
 
-function BestsellerPreview({row,onOrder}:any){
+function BestsellerPreview({row,onOrder,onClose}:any){
  useCMS();
+ if(['꽃다발','꽃바구니'].includes(row.product)&&row.variantId&&row.size){
+  return <SizePhotoDialog key={row.variantId} product={row.product} style={row.style||''} size={row.size} onClose={onClose} onOrder={onOrder}/>;
+ }
  const name=[row.name,row.style,row.label].filter(Boolean).join(' · ');
  const exact=gallery(row.product,row.style||'',row.size);
  let photos=exact;
- if(['꽃다발','꽃바구니'].includes(row.product)&&row.variantId)photos=sizeGalleryPhotos(cms,row.product,row.style,row.size,exact);
- else if(row.product==='동양난'&&row.variantId&&!exact.length){
+ if(row.product==='동양난'&&row.variantId&&!exact.length){
   const src=orchidProductPhoto(row.size,row.style);
   photos=src?[{src}]:[];
  }else if(!row.variantId)photos=gallery(row.product);
