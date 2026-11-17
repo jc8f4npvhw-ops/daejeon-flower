@@ -1,8 +1,9 @@
 import {approvedOrder} from './approved-order';
 import {Env,assert,body,json,hash,token,constantEqual,sameOrigin} from './types';
-import {normalizePhone,configuredOrigin} from './solapi';
+import {normalizePhone,configuredOrigin,hmac} from './solapi';
 import {kakaoFeatureApi,finishFeature} from './kakao-features';
 import {admin} from './auth';
+const phoneConsentCookie='__Host-dfds_kakao_phone';
 const authCookie='__Host-dfds_member',pendingCookie='__Host-dfds_signup',stateCookie='__Host-dfds_kakao_state';
 export const memberPolicy='member-v1-20261107';
 const syncTerms={terms:'dfds-member-terms-v1',privacy:'dfds-member-privacy-v1'} as const;
@@ -49,17 +50,42 @@ async function provider(url:string,init:RequestInit){const r=await fetch(url,{..
 export async function kakaoLoginApi(req:Request,env:Env,path:string):Promise<Response|null>{
  if(path.startsWith('/auth/features'))return await kakaoFeatureApi(req,env,path);
  if(path==='/auth/config'&&req.method==='GET'){let enabled=!!ready(env);if(enabled&&env.KAKAO_LOGIN_TEST_ONLY==='true'){try{await admin(req,env,['OWNER'])}catch{enabled=false}}return json({enabled,testOnly:env.KAKAO_LOGIN_TEST_ONLY==='true'})}
+ if(path==='/auth/kakao/phone-consent'&&req.method==='POST'){
+  const session=await memberSession(req,env,true);
+  assert(ready(env),503,'카카오 연락처 확인을 준비하고 있습니다.');
+  if(env.KAKAO_LOGIN_TEST_ONLY==='true')await admin(req,env,['OWNER']);
+  const eligible=await env.DB.prepare('SELECT 1 FROM customers c JOIN kakao_members m ON m.customer_id=c.id WHERE c.id=? AND c.phone_normalized IS NULL AND EXISTS(SELECT 1 FROM anniversary_reminders a WHERE a.customer_id=c.id AND a.deleted=0 AND a.notify=1)').bind(session.customer_id).first();
+  assert(eligible,409,'기념일 알림을 먼저 신청해주세요. 이미 확인한 연락처는 다시 연결할 필요가 없습니다.');
+  const base=origin(req,env),raw=token(),digest=await hash(cookieValue(req,authCookie));
+  await env.DB.prepare("INSERT INTO kakao_login_states(state_hash,expires_at) VALUES(?,datetime('now','+10 minutes'))").bind(await hash(raw)).run();
+  const u=new URL('https://kauth.kakao.com/oauth/authorize');
+  u.search=new URLSearchParams({response_type:'code',client_id:env.KAKAO_REST_API_KEY!,redirect_uri:base+'/api/auth/kakao/callback',state:raw,scope:'phone_number'}).toString();
+  const headers=new Headers({'Content-Type':'application/json','Cache-Control':'no-store'});
+  headers.append('Set-Cookie',setCookie(stateCookie,raw,600,true));
+  headers.append('Set-Cookie',setCookie(phoneConsentCookie,digest+'.'+await hmac(env.SESSION_SECRET,'phone-consent:'+raw+':'+digest),600,true));
+  return new Response(JSON.stringify({url:u.href}),{headers});
+ }
  if(path==='/auth/kakao/start'&&req.method==='POST'){
   sameOrigin(req);assert(ready(env),503,'카카오 로그인 연결을 준비하고 있습니다.');if(env.KAKAO_LOGIN_TEST_ONLY==='true')await admin(new Request(req.url,{headers:req.headers}),env,['OWNER']);const base=origin(req,env),raw=token();await env.DB.prepare("INSERT INTO kakao_login_states(state_hash,expires_at) VALUES(?,datetime('now','+10 minutes'))").bind(await hash(raw)).run();
   const u=new URL('https://kauth.kakao.com/oauth/authorize');u.searchParams.set('response_type','code');u.searchParams.set('client_id',env.KAKAO_REST_API_KEY!);u.searchParams.set('redirect_uri',base+'/api/auth/kakao/callback');u.searchParams.set('state',raw);
   const scopes=(env.KAKAO_LOGIN_SCOPES||'').split(',').filter(Boolean);assert(scopes.every(v=>['name','phone_number','birthday'].includes(v)),503,'로그인 수집 항목 설정을 확인해주세요.');if(scopes.length)u.searchParams.set('scope',scopes.join(','));
-  return redirect(u.href,[setCookie(stateCookie,raw,600,true)]);
+  return redirect(u.href,[setCookie(stateCookie,raw,600,true),setCookie(phoneConsentCookie,'',0,true)]);
  }
  if(path==='/auth/kakao/callback'&&req.method==='GET'){
   assert(ready(env),503,'카카오 로그인 연결을 준비하고 있습니다.');const base=origin(req,env),u=new URL(req.url),state=u.searchParams.get('state')||'',saved=cookieValue(req,stateCookie);assert(/^[a-f0-9]{64}$/.test(state)&&constantEqual(state,saved),403,'로그인 요청을 다시 시작해주세요.');
   const featureState=await env.DB.prepare('SELECT feature FROM kakao_feature_states WHERE state_hash=?').bind(await hash(state)).first();
   if(featureState)return await finishFeature(req,env,state);
   const claim=await env.DB.prepare("UPDATE kakao_login_states SET consumed=1 WHERE state_hash=? AND consumed=0 AND expires_at>CURRENT_TIMESTAMP").bind(await hash(state)).run();assert(claim.meta.changes===1,403,'이미 처리되었거나 만료된 로그인입니다.');
+  const phoneProof=cookieValue(req,phoneConsentCookie);
+  const phoneReturn=(status:string)=>redirect('/account?reminderPhone='+status,[setCookie(stateCookie,'',0,true),setCookie(phoneConsentCookie,'',0,true)]);
+  let phoneSession:{customer_id:number;kakao_id:string}|null=null;
+  if(phoneProof){
+   const proof=phoneProof.match(/^([a-f0-9]{64})\.([a-f0-9]{64})$/);
+   if(!proof||!constantEqual(proof[2],await hmac(env.SESSION_SECRET,'phone-consent:'+state+':'+proof[1])))return phoneReturn('retry');
+   phoneSession=await env.DB.prepare('SELECT s.customer_id,m.kakao_id FROM customer_login_sessions s JOIN kakao_members m ON m.customer_id=s.customer_id WHERE s.token_hash=? AND s.expires_at>CURRENT_TIMESTAMP').bind(proof[1]).first<{customer_id:number;kakao_id:string}>();
+   if(!phoneSession)return phoneReturn('retry');
+   if(u.searchParams.has('error'))return phoneReturn('cancelled');
+  }
   if(u.searchParams.has('error'))return redirect('/register?error=cancelled',[setCookie(stateCookie,'',0,true)]);
   const code=u.searchParams.get('code')||'';assert(code.length>0&&code.length<2048,400,'카카오 인증 응답을 확인해주세요.');
   try{
@@ -67,6 +93,13 @@ export async function kakaoLoginApi(req:Request,env:Env,path:string):Promise<Res
    const profile=await provider('https://kapi.kakao.com/v2/user/me',{headers:{Authorization:'Bearer '+access.access_token}});assert(Number.isSafeInteger(profile.id)&&profile.id>0,502,'카카오 회원 정보를 확인해주세요.');const id=String(profile.id);
    const member:any=await env.DB.prepare('SELECT customer_id FROM kakao_members WHERE kakao_id=?').bind(id).first();
    const a=profile.kakao_account||{},phone=a.phone_number_needs_agreement?'':kakaoPhone(a.phone_number),birthday=!a.birthday_needs_agreement&&a.birthday_type==='SOLAR'&&/^\d{4}$/.test(a.birthday||'')?a.birthday.slice(0,2)+'-'+a.birthday.slice(2):'';
+   if(phoneSession){
+    if(id!==String(phoneSession.kakao_id))return phoneReturn('account');
+    if(!/^01\d{8,9}$/.test(phone))return phoneReturn('unavailable');
+    await linkReturningMemberPhone(env,phoneSession.customer_id,id,phone);
+    const linked=await env.DB.prepare('SELECT 1 FROM customers WHERE id=? AND phone_normalized=?').bind(phoneSession.customer_id,phone).first();
+    return phoneReturn(linked?'ready':'conflict');
+   }
    let syncConsent:{terms?:string;privacy?:string}={};
    if(env.KAKAO_SYNC_ENABLED==='true'){
     const termsUrl=new URL('https://kapi.kakao.com/v2/user/service_terms');
@@ -83,7 +116,7 @@ export async function kakaoLoginApi(req:Request,env:Env,path:string):Promise<Res
    const claims={syncConsent,name:!a.name_needs_agreement&&typeof a.name==='string'?a.name.slice(0,50):'',phone:/^01\d{8,9}$/.test(phone)?phone:'',birthday:validBirthday(birthday)?birthday:''};
    const raw=token();await env.DB.prepare("INSERT INTO kakao_signup_sessions(token_hash,kakao_id,claims_json,expires_at) VALUES(?,?,?,datetime('now','+15 minutes'))").bind(await hash(raw),id,JSON.stringify(claims)).run();
    return redirect('/register',[setCookie(pendingCookie,raw,900),setCookie(stateCookie,'',0,true)]);
-  }catch{return redirect('/register?error=provider',[setCookie(stateCookie,'',0,true)])}
+  }catch{if(phoneSession)return phoneReturn('retry');return redirect('/register?error=provider',[setCookie(stateCookie,'',0,true)])}
  }
  if(path==='/auth/signup'&&req.method==='GET'){const p=await pending(req,env);return json({csrf:p.csrf,profile:{name:p.claims.name,phone:p.claims.phone,birthday:p.claims.birthday},accepted:{terms:!!p.claims.syncConsent?.terms,privacy:!!p.claims.syncConsent?.privacy},policyVersion:memberPolicy})}
  if(path==='/auth/signup'&&req.method==='POST'){

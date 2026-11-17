@@ -4,7 +4,7 @@ import {AnniversaryBenefit} from './anniversary-benefit';
 import {AnniversaryCouponWallet} from './anniversary-coupon-wallet';
 import React,{useEffect,useState} from 'react';
 let exchange:Promise<any>|null=null;
-export function LiveAnniversaries({close,couponPreview=false}:any){
+export function LiveAnniversaries({close,member,couponPreview=false}:any){
  const [data,setData]=useState<any>(null),[error,setError]=useState(''),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[edit,setEdit]=useState<any>(null),[saved,setSaved]=useState(''),[expanded,setExpanded]=useState('');
  async function api(path='',method='GET',body?:any){const r=await fetch('/api/anniversaries'+path,{method,credentials:'same-origin',headers:{'Content-Type':'application/json',...(data?.csrf?{'X-CSRF-Token':data.csrf}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});const result:any=await r.json();if(!r.ok)throw Error(result.message||'처리하지 못했습니다.');return result}
  const refresh=async()=>setData(await api());
@@ -14,9 +14,32 @@ export function LiveAnniversaries({close,couponPreview=false}:any){
   if(exchange)await exchange;
   const result=await api();if(active)setData(result);
  }catch(e:any){if(active)setError(e.message)}finally{if(active)setLoading(false);exchange=null}})();return()=>{active=false}},[]);
+ const [phoneResult,setPhoneResult]=useState('');
+ useEffect(()=>{
+  const url=new URL(location.href),result=url.searchParams.get('reminderPhone');
+  if(result){setPhoneResult(result);url.searchParams.delete('reminderPhone');history.replaceState(history.state,'',url.pathname+url.search+url.hash)}
+ },[]);
+ const confirmPhone=async()=>{
+  if(busy||!member?.csrf)return;
+  setBusy(true);setError('');setPhoneResult('');
+  try{
+   const response=await fetch('/api/auth/kakao/phone-consent',{method:'POST',headers:{'X-CSRF-Token':member.csrf}});
+   const result=await response.json() as {url?:string;message?:string};
+   if(!response.ok||!result.url)throw Error(result.message||'카카오 연락처 확인을 시작하지 못했습니다.');
+   location.assign(result.url);
+  }catch(e:any){setError(e.message);setBusy(false)}
+ };
+ const phoneMessages:Record<string,string>={
+  ready:'발송용 연락처가 확인됐어요.',
+  cancelled:'연락처 확인을 취소했어요. 저장한 기념일은 그대로예요.',
+  account:'홈페이지에 로그인한 카카오 계정으로 다시 확인해주세요.',
+  unavailable:'카카오에서 휴대전화 번호를 받지 못했어요. 카카오계정 전화번호와 제공 동의를 확인해주세요.',
+  conflict:'이 번호를 현재 계정에 연결할 수 없어요. 매장에 문의해주세요.',
+  retry:'카카오 연락처 확인을 완료하지 못했어요. 다시 시도해주세요.'
+ };
  const perform=async(fn:()=>Promise<any>,message:string)=>{if(busy)return;setBusy(true);setError('');setSaved('');try{await fn();await refresh();setSaved(message)}catch(e:any){setError(e.message)}finally{setBusy(false)}};
  return <div className="app-shell member-portal"><header className="mp-header"><button onClick={close}>← 쇼핑으로</button><b>내 기념일 관리</b><small>대전꽃백화점</small></header><div className="mp-body"><div className="mp-title"><span className="mp-eyebrow">A DAY TO REMEMBER</span><h1>소중한 날,<br/>미리 기억해요.</h1><p>양력 기준, 매년 3일 전 오전 10시부터 카카오톡으로 알려드려요.</p></div><AnniversaryBenefit available={data?.benefits?.anniversaryCouponReady===true} preview={couponPreview}/>{loading?<p role="status">기념일을 불러오고 있어요.</p>:!data?<section className="mp-card"><h2>로그인하고 기념일을 관리해요.</h2><p><a href="/register">카카오로 로그인·회원가입 →</a><br/>매장에서 본인 확인 후 발급받은 기념일 관리 링크로 접속해주세요.</p><p>관리 링크는 다른 사람과 공유하지 마세요.</p></section>:<>
- <section className="mp-card"><h2>카카오톡 수신 상태</h2><p>{data.preferences.marketing?'수신 동의 상태입니다.':'수신 미동의 상태입니다. 주문할 때 선택할 수 있어요.'}</p>{!!data.preferences.marketing&&!data.preferences.channel_friend&&<><p className="mp-note">현재 카카오 알림은 채널 친구에게 발송됩니다.</p><KakaoFriendButton url={data.channelUrl}/><button type="button" className="mp-link" disabled={busy} onClick={()=>perform(()=>api('/consent','PUT',{marketing:true,channelFriend:true,policyVersion:data.policyVersion}),'채널 친구 추가 확인을 저장했습니다.')}>채널을 추가했어요</button></>}{!!data.preferences.marketing&&<button type="button" className="mp-btn mp-outline" disabled={busy} onClick={()=>perform(()=>api('/consent','PUT',{marketing:false,channelFriend:!!data.preferences.channel_friend,policyVersion:data.policyVersion}),'수신 동의를 철회했습니다.')}>수신 동의 철회</button>}
+ <section className="mp-card"><h2>카카오톡 수신 상태</h2>{phoneMessages[phoneResult]&&<p role="status">{phoneMessages[phoneResult]}</p>}{member&&!member.reminderPhoneReady&&data.rows.some((a:any)=>a.notify)&&<><p>알림을 받으려면 카카오에서 휴대전화 번호를 확인해주세요. 기념일은 이미 저장됐어요.</p><button type="button" className="mp-link" disabled={busy} onClick={confirmPhone}>카카오에서 연락처 확인</button></>}<p>{data.preferences.marketing?'수신 동의 상태입니다.':'수신 미동의 상태입니다. 주문할 때 선택할 수 있어요.'}</p>{!!data.preferences.marketing&&!data.preferences.channel_friend&&<><p className="mp-note">현재 카카오 알림은 채널 친구에게 발송됩니다.</p><KakaoFriendButton url={data.channelUrl}/><button type="button" className="mp-link" disabled={busy} onClick={()=>perform(()=>api('/consent','PUT',{marketing:true,channelFriend:true,policyVersion:data.policyVersion}),'채널 친구 추가 확인을 저장했습니다.')}>채널을 추가했어요</button></>}{!!data.preferences.marketing&&<button type="button" className="mp-btn mp-outline" disabled={busy} onClick={()=>perform(()=>api('/consent','PUT',{marketing:false,channelFriend:!!data.preferences.channel_friend,policyVersion:data.policyVersion}),'수신 동의를 철회했습니다.')}>수신 동의 철회</button>}
  {!data.mode.ready&&<p className="mp-note">날짜와 신청은 저장됩니다. 자동 발송은 준비 중이며 아직 시작하지 않았습니다.</p>}</section>
  <AnniversaryCouponWallet/><section className="mp-section"><header><h2>기억할 날짜</h2></header>{data.rows.map((a:any)=><article className="mp-card" key={a.id}><button className="moment-row-title" type="button" aria-expanded={expanded===a.id} onClick={()=>setExpanded(expanded===a.id?'':a.id)}><strong>{a.month}월 {a.day}일 · {a.label}</strong><span aria-hidden="true">{expanded===a.id?'−':'+'}</span></button>{expanded===a.id&&<div className="moment-row-details">{a.start_date&&<DatingDates startDate={a.start_date}/ >}{a.memo&&<p className="moment-memo">{a.memo}</p>}<p>{a.notify?'매년 3일 전 알림 신청':'날짜만 보관 · 알림 OFF'}</p><button className="mp-link" disabled={busy} onClick={()=>setEdit({...newAnniversaryDraft(a.month,a.day),...a,relationship:a.relationship||'',occasion:a.occasion||'기타',startDate:a.start_date||'',memo:a.memo||'',notify:!!a.notify})}>수정하기</button><button className="mp-link" disabled={busy} onClick={()=>{if(window.confirm('이 기념일을 삭제할까요? 앞으로의 알림도 중단됩니다.'))perform(()=>api('/'+a.id,'DELETE'),'기념일을 삭제했습니다.')}}>삭제</button></div>}</article>)}{!data.rows.length&&<p>아직 등록한 기념일이 없어요.</p>}<button className="mp-btn" disabled={busy} onClick={()=>setEdit({...newAnniversaryDraft(),id:'',notify:false})}>＋ 기념일 등록하기</button></section>
  {edit&&<form className="mp-card" onSubmit={e=>{e.preventDefault();if(!draftReady(edit))return;perform(async()=>{await api(edit.id?'/'+edit.id:'',edit.id?'PUT':'POST',{...edit,label:anniversaryTitle(edit),month:edit.month,day:edit.day,notify:edit.notify});setEdit(null)},'기념일을 저장했습니다.')}}><h2>{edit.id?'기념일 수정':'새 기념일'}</h2><AnniversaryChoice value={edit} onChange={v=>setEdit({...edit,...v})} disabled={busy}/>{draftReady(edit)&&<><label className="mp-remind-check"><input type="checkbox" checked={edit.notify} onChange={e=>setEdit({...edit,notify:e.target.checked})}/> 매년 3일 전 카카오 알림 신청</label><p>수신동의와 채널 친구 확인이 모두 설정되어야 발송 대상이 됩니다.</p><button className="mp-btn" disabled={busy}>저장하기</button></>}<button type="button" className="mp-link" onClick={()=>setEdit(null)}>취소</button></form>}
