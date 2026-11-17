@@ -601,7 +601,7 @@ function pricedGifts(){return cms.products.filter((p:any)=>active(p.id)&&p.mode=
 function BestsellerPreview({row,onOrder,onClose}:any){
  useCMS();
  if(['꽃다발','꽃바구니'].includes(row.product)&&row.variantId&&row.size){
-  return <SizePhotoDialog key={row.variantId} product={row.product} style={row.style||''} size={row.size} onClose={onClose} onOrder={onOrder}/>;
+  return <SizePhotoDialog key={row.variantId} product={row.product} style={row.style||''} size={row.size} onClose={onClose} onOrder={row.price!=null?onOrder:undefined} consultation={row.price==null?<External className="solid-btn">이 구성 상담하기</External>:undefined}/>;
  }
  const name=[row.name,row.style,row.label].filter(Boolean).join(' · ');
  const exact=gallery(row.product,row.style||'',row.size);

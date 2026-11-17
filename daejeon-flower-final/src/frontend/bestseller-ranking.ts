@@ -4,8 +4,10 @@ export const salesKey=(p:any)=>JSON.stringify([p.product,p.style||'',p.size]);
 export function bestsellerRows(data:any,group:BestsellerGroup,isVisible:(code:string)=>boolean=()=>true){
  return data.products.filter((p:any)=>p.group===group&&p.active&&isVisible(p.categoryCode?.startsWith('CAT_')?p.categoryCode:group)).flatMap((p:any)=>{
   const item={product:p.id,name:p.name,group};
-  const variants=p.mode==='consult'?[]:(p.variants||[]).filter((v:any)=>v.active&&!v.retired&&v.price>0);
-  return variants.length?variants.map((v:any)=>({...item,variantId:v.id,style:v.style||'',size:v.size,label:v.label||v.size,price:v.price})):
+  const variants=(p.variants||[]).filter((v:any)=>v.active&&!v.retired);
+  return variants.length?variants.map((v:any)=>({...item,variantId:v.id,style:v.style||'',size:v.size,
+   label:v.label&&v.size&&v.label!==v.size?v.label+' ('+v.size+')':v.label||v.size,
+   price:p.mode!=='consult'&&v.price>0?v.price:null})):
    [{...item,style:'',size:'',label:'',price:null}];
  });
 }
