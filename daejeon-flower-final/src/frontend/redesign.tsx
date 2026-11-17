@@ -47,7 +47,7 @@ type Route =
   | { kind: "main"; main: Main; paymentId?: string }
   | { kind: "occasion"; occasion: Occasion };
 
-const PageSelection=createContext<(main:string,detail?:string)=>void>(()=>{});
+const PageSelection=createContext<(main:string,detail?:string,inlineFoliage?:boolean)=>void>(()=>{});
 const shareMain=['FLOWER','PLANT','PROPOSE','CEREMONY','PRESERVED','WEDDING','FLOWER CLASS'];
 const shareOccasions=['생일','기념일','졸업','인사이동','개업','감사','부모님 선물'];
 function sharedSelection(main:string,detail:string){
@@ -348,16 +348,30 @@ function OpeningPlant() {
  const selectPage=useContext(PageSelection);
  const availablePlants=useAvailablePlants();
  const root=useRef<HTMLDivElement>(null);
-  const plant=finderSelection?.category==='관엽화분'?finderSelection.plant||'':''; const selected=availablePlants.find(p=>p.id===plant);const [size,setSize]=useState(finderSelection?.size||(selected?.sizes.length===1?selected.sizes[0]:''));
+ const [plant,setPlant]=useState(()=>finderSelection?.category==='관엽화분'?finderSelection.plant||'':'');
+ const selected=availablePlants.find(p=>p.id===plant);
+ const [size,setSize]=useState(()=>finderSelection?.size||(selected?.sizes.length===1?selected.sizes[0]:''));
+ const [scrollRequest,setScrollRequest]=useState<{target:string}|null>(null);
  const nextStep=selected?.sizes.length===1?'#opening-gallery':selected?.sizes.length?'#opening-size':'#opening-no-options';
+ function choosePlant(p:{id:string;sizes:string[]}){
+  if(plant!==p.id){
+   selectPage('PLANT',p.id,true);
+   setPlant(p.id);
+   setSize(p.sizes.length===1?p.sizes[0]:'');
+  }
+  setScrollRequest({target:p.sizes.length===1?'#opening-gallery':p.sizes.length?'#opening-size':'#opening-no-options'});
+ }
  useLayoutEffect(()=>{
-  if(!selected||finderSelection?.fromBestseller||finderSelection?.quickOrder)return;
-  const target=root.current?.querySelector<HTMLElement>(nextStep);
+  if(!selected||(!scrollRequest&&(finderSelection?.fromBestseller||finderSelection?.quickOrder)))return;
+  const target=root.current?.querySelector<HTMLElement>(scrollRequest?.target||nextStep);
   if(!target)return;
-  const frame=window.requestAnimationFrame(()=>target.scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'start'}));
+  const frame=window.requestAnimationFrame(()=>{
+   target.dataset.stepMotion='shown';
+   target.scrollIntoView({behavior:'instant' as ScrollBehavior,block:'start'});
+  });
   return()=>window.cancelAnimationFrame(frame);
- },[selected?.id,nextStep]);
-  return <div ref={root}><SectionHead title="관엽화분" desc="식물 종류와 사이즈를 선택해주세요." /><div className="category-grid">{availablePlants.map((p) => <button className="product-card" key={p.name} aria-pressed={plant===p.id} onClick={() => {if(plant===p.id){root.current?.querySelector(nextStep)?.scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'start'});return}selectPage('PLANT',p.id)}}><Photo label={p.id} tone="plant" /><div className="product-name">{p.name}</div><div className="product-meta">{p.sizes.map((s:string)=>variantLabel(p.id,s)).join(" · ")}</div></button>)}</div>{selected && selected.sizes.length > 1 && <StepReveal as="section" className="section" id="opening-size"><SectionHead eyebrow="STEP 02" title={selected.name+' 사이즈 선택'} /><div className="size-grid">{selected.sizes.map((s) => <button className={`size-card ${size === s ? "selected" : ""}`} key={s} onClick={() => { setSize(s); smoothTo("opening-gallery"); }}><div className="size-name">{variantLabel(plant,s)}</div><Photo label={`${plant} ${s}`} tone="plant"/><div className="price">{won(priceOf(plant,'',s))}</div></button>)}</div></StepReveal>}{selected&&!selected.sizes.length&&<StepReveal as="section" className="section" id="opening-no-options"><SectionHead title={selected.name}/><p className="notice">선택 가능한 사이즈는 매장에 문의해주세요.</p><External>카카오톡 상담하기</External></StepReveal>}{selected && size && <StepReveal as="section" className="section" id="opening-gallery"><SectionHead eyebrow="REFERENCE" title={`${selected?.name||plant} ${size} 제작 이미지`} /><Slider label={`${plant} ${size}`} tone="plant" /><RecentProductPhotos product={plant} style="" size={size} heading="이 상품으로 전해드린 식물"/><p className="plant-pot-note">화분은 매장 상황에 따라 변경될 수 있습니다.</p><ProductIntro id={plant}/>{cms.products.find((p:any)=>p.id===plant)?.mode==='consult'?<External className="solid-btn">카카오톡 상담하기</External>:<PlantOrder sku={{product:plant,style:'',size}} title={`${plant} / ${size}`} price={priceOf(plant,'',size)} />}</StepReveal>}</div>;
+ },[selected?.id,nextStep,scrollRequest]);
+  return <div ref={root}><SectionHead title="관엽화분" desc="식물 종류와 사이즈를 선택해주세요." /><div className="category-grid">{availablePlants.map((p) => <button className="product-card" key={p.id} aria-pressed={plant===p.id} onClick={() => choosePlant(p)}><Photo label={p.id} tone="plant" /><div className="product-name">{p.name}</div><div className="product-meta">{p.sizes.map((s:string)=>variantLabel(p.id,s)).join(" · ")}</div></button>)}</div>{selected && selected.sizes.length > 1 && <StepReveal as="section" className="section" id="opening-size"><SectionHead eyebrow="STEP 02" title={selected.name+' 사이즈 선택'} /><div className="size-grid">{selected.sizes.map((s) => <button className={`size-card ${size === s ? "selected" : ""}`} key={s} onClick={() => { setSize(s); setScrollRequest({target:"#opening-gallery"}); }}><div className="size-name">{variantLabel(plant,s)}</div><Photo label={`${plant} ${s}`} tone="plant"/><div className="price">{won(priceOf(plant,'',s))}</div></button>)}</div></StepReveal>}{selected&&!selected.sizes.length&&<StepReveal as="section" className="section" id="opening-no-options"><SectionHead title={selected.name}/><p className="notice">선택 가능한 사이즈는 매장에 문의해주세요.</p><External>카카오톡 상담하기</External></StepReveal>}{selected && size && <StepReveal as="section" className="section" id="opening-gallery"><SectionHead eyebrow="REFERENCE" title={`${selected?.name||plant} ${size} 제작 이미지`} /><Slider label={`${plant} ${size}`} tone="plant" /><RecentProductPhotos product={plant} style="" size={size} heading="이 상품으로 전해드린 식물"/><p className="plant-pot-note">화분은 매장 상황에 따라 변경될 수 있습니다.</p><ProductIntro id={plant}/>{cms.products.find((p:any)=>p.id===plant)?.mode==='consult'?<External className="solid-btn">카카오톡 상담하기</External>:<PlantOrder key={plant+':'+size} sku={{product:plant,style:'',size}} title={`${plant} / ${size}`} price={priceOf(plant,'',size)} />}</StepReveal>}</div>;
 }
 
 function OrientalOrchid() {
@@ -507,10 +521,16 @@ export default function Home() {
    const scrollToPlant=next.kind==='main'&&next.main==='PLANT'&&finderSelection?.category==='관엽화분'&&finderSelection?.plant&&!finderSelection?.fromBestseller&&!quick;
    if(!scrollToPlant)window.scrollTo({top:0,behavior:reduceMotion()?'auto':'smooth'});
   };
-  const selectPage=(main:string,detail?:string)=>{
+  const selectPage=(main:string,detail?:string,inlineFoliage=false)=>{
    finderSelection=sharedSelection(main,detail||'');
    giftIntent=main==='FLOWER'&&finderSelection?.category?{product:finderSelection.category}:null;
-   navigate({kind:'main',main});
+   const next:Route={kind:'main',main};
+   if(inlineFoliage&&route.kind==='main'&&route.main==='PLANT'&&finderSelection?.plant){
+    routeHistory.current?.push({route:next,gift:null,finder:{...finderSelection},quickEntry:false},storeAddress(next,finderSelection,null));
+    setQuickEntry(false);
+    return;
+   }
+   navigate(next);
   };
   const preview=route.kind==='main'?finderSelection?.bestsellerPreview:null;
   const back=()=>{
