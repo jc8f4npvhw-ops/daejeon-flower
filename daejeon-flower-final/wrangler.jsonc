@@ -60,6 +60,6 @@
     "SOLAPI_ANNIVERSARY_TEMPLATE_ID": "KA01BP261107105715297M4itaQpFcQo"
   },
   "observability": {
-    "enabled": false
+    "enabled": true
   }
 }
