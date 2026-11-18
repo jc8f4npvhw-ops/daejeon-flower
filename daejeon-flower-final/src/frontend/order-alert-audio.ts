@@ -1,15 +1,25 @@
 /** Audio starts only following a user gesture. No external audio files. */
 export const ORDER_ALERT_REPEAT_MS=2500;
 export const ORDER_ALERT_MAX_GAIN=.85;
+let sharedContext:AudioContext|null=null;
+const getOrderAlertContext=()=>{
+ if(sharedContext&&sharedContext.state!=='closed')return sharedContext;
+ const Audio=window.AudioContext||(window as Window & {webkitAudioContext?:typeof AudioContext}).webkitAudioContext;
+ if(!Audio)throw Error('이 브라우저는 알림음을 지원하지 않습니다.');
+ return sharedContext=new Audio();
+};
+export async function unlockOrderAlertAudio(){
+ const context=getOrderAlertContext();
+ if(context.state!=='running')await context.resume();
+}
 export function orderAlertAudio(){
  let context:AudioContext|null=null,gain:GainNode|null=null,volume=1;
  const tones:OscillatorNode[]=[];
  const stop=()=>{for(const o of tones.splice(0)){try{o.stop()}catch{}}};
  return {
+  ready(){try{return getOrderAlertContext().state==='running'}catch{return false}},
   async start(){
-   const Audio=(window as any).AudioContext||(window as any).webkitAudioContext;
-   if(!Audio)throw Error('이 브라우저는 알림음을 지원하지 않습니다.');
-   context??=new Audio();
+   context=getOrderAlertContext();
    if(!gain){gain=context!.createGain();gain.connect(context!.destination)}
    await context!.resume();
    if(context!.state!=='running')throw Error('소리 재생을 허용한 뒤 다시 시작해주세요.');
@@ -32,6 +42,6 @@ export function orderAlertAudio(){
    }
   },
   stop,
-  close(){stop();context?.close().catch(()=>{});context=null;gain=null}
+  close(){stop();gain?.disconnect();context=null;gain=null}
  };
 }

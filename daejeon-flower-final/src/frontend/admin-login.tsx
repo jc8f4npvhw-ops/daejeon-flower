@@ -1,4 +1,5 @@
 import React,{useEffect,useState} from 'react';
+import {unlockOrderAlertAudio} from './order-alert-audio';
 
 export const ADMIN_USERNAME_KEY='dfds-admin-username';
 export async function requestPasswordSave(id:string,password:string){
@@ -13,7 +14,7 @@ export function AdminLogin({onLogin}:{onLogin:(input:{email:string,password:stri
  const [busy,setBusy]=useState(false),[error,setError]=useState('');
  useEffect(()=>{try{const saved=localStorage.getItem(ADMIN_USERNAME_KEY);if(saved){setEmail(saved);setSaveId(true)}}catch{}},[]);
  return <div className="m-login"><small>DAEJEON FLOWER</small><h1>관리자 로그인</h1><p>등록된 관리자 계정으로 로그인하세요.</p>
- <form autoComplete="on" onSubmit={async e=>{e.preventDefault();if(busy)return;setBusy(true);setError('');try{
+ <form autoComplete="on" onSubmit={async e=>{e.preventDefault();if(busy)return;void unlockOrderAlertAudio().catch(()=>{});setBusy(true);setError('');try{
   const id=email.trim();await onLogin({email:id,password,rememberMe});
   try{if(saveId)localStorage.setItem(ADMIN_USERNAME_KEY,id);else localStorage.removeItem(ADMIN_USERNAME_KEY)}catch{}
   if(savePassword)void requestPasswordSave(id,password);
