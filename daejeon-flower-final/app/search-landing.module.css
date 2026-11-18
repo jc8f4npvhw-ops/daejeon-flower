@@ -1,0 +1,10 @@
+.page{max-width:54rem;margin:auto;padding:clamp(1.25rem,5vw,3rem);color:#25382a;line-height:1.65}
+.hero{background:#eef1e8;padding:clamp(1.25rem,5vw,2.5rem);border-radius:1.5rem}
+.hero h1{font-size:clamp(2rem,5vw,3rem);line-height:1.15;margin:.35rem 0 .7rem}
+.eyebrow{font-size:.85rem;font-weight:700;letter-spacing:.06em;color:#49644e}
+.page section{margin:2rem 0}
+.page h2{font-size:1.35rem;margin-bottom:.45rem}
+.cta{display:inline-block;color:#fff;background:#294b35;border-radius:100px;font-weight:700;padding:.7rem 1.2rem;margin-top:.5rem;text-decoration:none}
+.page a:not(.cta),.home a{text-decoration:underline;text-underline-offset:.2em;color:inherit}
+.page a:focus-visible,.home a:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+.home{display:flex;flex-wrap:wrap;justify-content:center;gap:.7rem 1.4rem;margin:0 auto;padding:1rem;color:#25382a}

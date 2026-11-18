@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /admin
+Disallow: /api/
+Disallow: /account
+Disallow: /payment
+Disallow: /register
+
+Sitemap: https://xn--js0bx4ezvk5jm1b610k.com/sitemap.xml
