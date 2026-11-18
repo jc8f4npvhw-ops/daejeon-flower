@@ -18,16 +18,23 @@ export function orderAlertAudio(){
  const stop=()=>{for(const o of tones.splice(0)){try{o.stop()}catch{}}};
  return {
   ready(){try{return getOrderAlertContext().state==='running'}catch{return false}},
+  watchState(onChange:()=>void){
+   try{
+    const audio=getOrderAlertContext();
+    audio.addEventListener('statechange',onChange);
+    return ()=>audio.removeEventListener('statechange',onChange);
+   }catch{return ()=>{}}
+  },
   async start(){
    context=getOrderAlertContext();
    if(!gain){gain=context!.createGain();gain.connect(context!.destination)}
-   await context!.resume();
+   if(context!.state!=='running')await context!.resume();
    if(context!.state!=='running')throw Error('소리 재생을 허용한 뒤 다시 시작해주세요.');
    gain.gain.value=volume*ORDER_ALERT_MAX_GAIN;
   },
   volume(value:number){volume=Math.min(1,Math.max(0,value));if(gain)gain.gain.value=volume*ORDER_ALERT_MAX_GAIN},
   play(){
-   if(!context||context.state!=='running'||!gain)throw Error('소리가 일시 중지되었습니다. 주문 알림 시작을 다시 눌러주세요.');
+   if(!context||context.state!=='running'||!gain)throw Error('브라우저에서 소리를 일시 중지했어요. 화면을 누르면 다시 준비됩니다.');
    // A repeated sound test replaces the prior chime instead of stacking loud tones.
    stop();
    for(const [i,f]of [784,988,1175].entries()){

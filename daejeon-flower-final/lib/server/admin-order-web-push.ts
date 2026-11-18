@@ -46,7 +46,7 @@ export async function sendAppleOrderPush(endpoint: string, key: string, auth: st
   const signature = await crypto.subtle.sign({name:'ECDSA', hash:'SHA-256'}, signingKey, bytes(jwt));
   const vapidKey = base64url(concat(new Uint8Array([4]), decodePushBytes(privateJwk.x), decodePushBytes(privateJwk.y)));
   const response = await fetch(url.toString(), {
-    method:'POST', redirect:'error', signal:AbortSignal.timeout(7000),
+    method:'POST', redirect:'manual', signal:AbortSignal.timeout(7000),
     headers:{
       Authorization:'vapid t=' + jwt + '.' + base64url(new Uint8Array(signature)) + ', k=' + vapidKey,
       TTL:'3600', Urgency:'high', 'Content-Encoding':'aes128gcm', 'Content-Type':'application/octet-stream',
