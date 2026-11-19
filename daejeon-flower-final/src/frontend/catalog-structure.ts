@@ -1,6 +1,7 @@
 export const catalogGroups:Record<string,string>={FLOWER:'꽃',PLANT:'식물',PROPOSE:'프로포즈',WEDDING:'웨딩',CEREMONY:'화환','FLOWER CLASS':'클래스',PRESERVED:'프리저브드'};
 export const categoryDefinitions=[
  ['FLOWER_BOUQUET','FLOWER','꽃다발','꽃다발'],['FLOWER_BASKET','FLOWER','꽃바구니','꽃바구니'],['FLOWER_VASE','FLOWER','화병꽃이','화병꽃이'],['FLOWER_CENTERPIECE','FLOWER','센터피스','센터피스'],
+ ['FLOWER_MONEY_GIFT','FLOWER','돈과 함께 선물하는 꽃','money-gift-flowers'],
  ['PLANT_FOLIAGE','PLANT','관엽화분','foliage'],['PLANT_ORIENTAL_ORCHID','PLANT','동양난','동양난'],['PLANT_WESTERN_ORCHID','PLANT','서양난','서양난'],
  ['PROPOSE_JUST_ROSE','PROPOSE','JUST ROSE','JUST ROSE'],['PROPOSE_TRUNK','PROPOSE','트렁크','트렁크'],['PROPOSE_HOTEL','PROPOSE','호텔','호텔'],
  ['WEDDING_SHOOT','WEDDING','촬영부케','촬영부케'],['WEDDING_MAIN','WEDDING','본식부케','본식부케'],['WEDDING_SPACE','WEDDING','공간장식','공간장식'],
