@@ -9,7 +9,7 @@ export function deliveryInquiryText(payload:any,title:string,area:DaejeonDeliver
  if(payload.bag)rows.push('쇼핑백: 추가');
  if(Number.isSafeInteger(payload.optionTotal)&&payload.optionTotal>0)rows.push('상품·옵션 금액: '+money(payload.optionTotal));
  if(area){
-  rows.push('배송 지역: '+daejeonAddress(area),'예상 배송비: '+daejeonDeliveryFeeText(area));
+  rows.push('배송 지역: '+daejeonAddress(area),'배송비: '+daejeonDeliveryFeeText(area));
   if(area.fee!==null&&Number.isSafeInteger(payload.optionTotal)&&payload.optionTotal>0){
    rows.push('예상 결제 금액: '+money(payload.optionTotal+area.fee));
   }
@@ -39,7 +39,7 @@ export function DeliveryConsultation({disabled,title,payload,settings}:any){
   }
  }
  return <section className="delivery-consultation" aria-label="배송 주문 카카오톡 상담">
-  <h3>배송 주문은 카카오톡으로 상담해주세요</h3><p className="help">입력한 문의내용을 복사해 카카오톡으로 보내주세요. 배송비와 총액을 확인한 뒤 결제 링크를 안내해 드립니다.</p>
+  <h3>이 지역의 배송비는 상담 후 안내해드려요</h3><p className="help">입력한 문의내용을 복사해 카카오톡으로 보내주세요. 배송비와 총액을 확인한 뒤 결제 링크를 안내해 드립니다.</p>
   <p className="help"><b>아직 주문·결제가 접수된 상태가 아닙니다.</b> 카카오톡에서 문의내용을 보내야 상담이 시작됩니다.</p>
   {disabled?<p className="help">상품과 수령 일시, 주문자·받는 분 연락처, 배송 지역과 상세주소를 먼저 입력해주세요.</p>:<textarea aria-label="카카오톡에 보낼 배송 문의내용" readOnly rows={10} value={text} style={{width:'100%',boxSizing:'border-box',font:'inherit',lineHeight:1.8,padding:14,border:'1px solid #ddd6cd',borderRadius:14,margin:'12px 0'}}/>}
   <button type="button" className="soft-btn" disabled={disabled} onClick={copy}>{copied?'문의내용 다시 복사':'문의내용 복사'}</button>
