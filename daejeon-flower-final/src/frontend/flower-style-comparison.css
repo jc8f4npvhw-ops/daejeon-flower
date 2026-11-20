@@ -104,7 +104,7 @@
 
 .flower-style-photos {
   min-width: 0;
-  padding-top: 6px;
+  padding-top: 10px;
   border-top: 1px solid var(--line, #e2e0da);
 }
 
@@ -129,11 +129,12 @@
 
 .flower-style-comparison .style-photo-strip {
   gap: 5px;
-  padding: 2px 0 5px;
+  padding: 2px 0 8px;
 }
 
 .flower-style-comparison .style-photo-strip > button {
   flex: 0 0 calc((100% - 5px) / 2);
+  aspect-ratio: 4 / 5;
   border-radius: 8px;
 }
 
