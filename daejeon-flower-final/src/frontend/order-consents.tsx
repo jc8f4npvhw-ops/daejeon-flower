@@ -2,7 +2,7 @@ import React from 'react';
 import {checkoutMarketingLabel,checkoutMarketingDetails} from './checkout-marketing';
 
 export function OrderConsents({
-  settings, privacy, terms, onPrivacyChange, onTermsChange, kakaoUpdates, onKakaoChange,
+  settings, privacy, terms, onPrivacyChange, onTermsChange,
   marketing, onMarketingChange, onAcceptAll, acceptAllDisabled,
 }:any){
   return <fieldset className="order-consents">
@@ -39,14 +39,6 @@ export function OrderConsents({
         <p><a href="/refund" target="_blank" rel="noopener noreferrer">취소·교환·환불 정책 보기 (새 창)</a></p>
       </details>
     </div>
-    {onKakaoChange&&<div role="group" aria-label="배송완료 안내" style={{marginTop:16}}>
-      <p style={{fontWeight:700,margin:'0 0 8px'}}>배송완료 안내</p>
-      <label className="check-row">
-        <input type="checkbox" checked={kakaoUpdates===true} onChange={e=>onKakaoChange(e.target.checked)}/>
-        <span>[선택] 카카오톡 채널을 추가했으며 배송완료 안내를 받겠습니다.</span>
-      </label>
-      <p className="help">주문자 연락처로 배송사진 확인 링크를 보내드립니다. 광고 수신 동의와는 별개입니다. <a className="kakao-action" href="https://pf.kakao.com/_XPrmX" target="_blank" rel="noopener noreferrer">카카오톡 채널 추가하기</a></p>
-    </div>}
     {onAcceptAll&&<div style={{marginTop:16}}>
       <button type="button" className="cta" disabled={acceptAllDisabled} onClick={onAcceptAll}>
         모두 동의하고 진행

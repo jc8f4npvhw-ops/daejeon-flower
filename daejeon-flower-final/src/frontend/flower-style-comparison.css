@@ -1,0 +1,151 @@
+.style-grid.flower-style-comparison {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 8px;
+}
+
+.style-grid.flower-style-comparison[data-single="true"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.flower-style-comparison .flower-style-option {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 9px;
+  min-width: 0;
+  padding: clamp(7px, 2.3vw, 14px);
+  border-radius: 16px;
+}
+
+@supports (grid-template-rows: subgrid) {
+  .flower-style-comparison .flower-style-option {
+    grid-row: span 4;
+    grid-template-rows: subgrid;
+  }
+}
+
+.flower-style-comparison .style-profile {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 6px;
+  min-height: 64px;
+  padding: 0;
+}
+
+.flower-style-comparison .avatar {
+  width: clamp(28px, 8vw, 42px);
+  height: clamp(28px, 8vw, 42px);
+}
+
+.flower-style-heading b {
+  display: block;
+  font-size: clamp(12px, 3.4vw, 16px);
+  line-height: 1.3;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.flower-style-comparison .style-profile p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 5px;
+  margin: 4px 0 0;
+  font-size: clamp(11px, 3vw, 13px);
+  line-height: 1.35;
+}
+
+.flower-style-heading strong {
+  color: #242521;
+  white-space: nowrap;
+}
+
+.flower-style-intro {
+  padding-top: 7px;
+  border-top: 1px solid var(--line, #e2e0da);
+  color: #514e48;
+  font-size: clamp(11px, 3.1vw, 13px);
+  line-height: 1.45;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.flower-style-intro > p {
+  margin: 0 0 3px;
+}
+
+.flower-style-comparison .flower-style-intro details {
+  padding: 0;
+  font-size: inherit;
+}
+
+.flower-style-intro summary {
+  min-height: 30px;
+  padding-block: 6px;
+  cursor: pointer;
+}
+
+.flower-style-full-intro {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.flower-style-photos {
+  min-width: 0;
+  padding-top: 6px;
+  border-top: 1px solid var(--line, #e2e0da);
+}
+
+.flower-style-comparison .style-photo-preview {
+  margin: 0;
+}
+
+.flower-style-comparison .style-photo-caption {
+  gap: 3px;
+  margin-bottom: 4px;
+}
+
+.flower-style-comparison .style-photo-caption > div {
+  gap: 2px;
+}
+
+.flower-style-comparison .style-photo-caption button {
+  width: 28px;
+  height: 28px;
+  font-size: 18px;
+}
+
+.flower-style-comparison .style-photo-strip {
+  gap: 5px;
+  padding: 2px 0 5px;
+}
+
+.flower-style-comparison .style-photo-strip > button {
+  flex: 0 0 calc((100% - 5px) / 2);
+  border-radius: 8px;
+}
+
+.flower-style-comparison .style-photo-hint {
+  display: none;
+}
+
+.flower-style-comparison .select-btn {
+  align-self: end;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 5px 3px;
+  margin: 0;
+  border-radius: 10px;
+  font-size: clamp(11px, 3.2vw, 14px);
+}
+
+.flower-style-comparison .style-card.selected {
+  border-color: #56715a;
+  box-shadow: inset 0 0 0 1px #56715a;
+}
+
+.flower-style-comparison .select-btn[aria-pressed="true"] {
+  background: #355640;
+  color: #fff;
+}

@@ -127,7 +127,7 @@ export function AdminManager({showCustomer}:any){const [alertOrder,setAlertOrder
 export function CmsLoading({children,fallback}:any){const [ready,setReady]=useState(false),[error,setError]=useState('');useEffect(()=>{loadCMS().then(()=>setReady(true)).catch(e=>setError(e.message))},[]);return error?<div className="m-empty"><h2>매장 정보를 불러오지 못했습니다.</h2><p>{error}</p><button onClick={()=>location.reload()}>다시 시도</button></div>:ready?children:(fallback??<div className="m-empty">매장 정보를 불러오고 있습니다.</div>)}
 export function Checkout({disabled,title,children,payload,onPrivacyChange}:any){
  const [marketing,setMarketing]=useState(false),[coupon,setCoupon]=useState<any>(null);
- const [kakaoUpdates,setKakaoUpdates]=useState(false),[termsAgreed,setTermsAgreed]=useState(false);
+ const [termsAgreed,setTermsAgreed]=useState(false);
  const [busy,setBusy]=useState(false),[error,setError]=useState('');
  const pending=useRef(false);
  const recent=useRef<{body:string;key:string}|null>(null);
@@ -137,15 +137,26 @@ export function Checkout({disabled,title,children,payload,onPrivacyChange}:any){
  const total=shipping&&Number.isSafeInteger(fee)&&Number.isSafeInteger(payload.optionTotal)
   ?payload.optionTotal+fee-(coupon?2000:0):null;
  const enabled=live&&cms.settings.paymentsEnabled&&cms.settings.policiesConfirmed===true;
- const blocked=disabled||busy||!enabled||(shipping&&total===null);
+ const processing=busy||!enabled;
+ const orderIncomplete=disabled||(shipping&&total===null);
+ const blocked=processing||orderIncomplete;
  const won=(amount:number)=>amount.toLocaleString('ko-KR')+'원';
 
  async function pay(all=false){
-  if(blocked||pending.current||(!all&&(!termsAgreed||payload.privacy!==true)))return;
+  if(processing||pending.current)return;
+  if(all){
+   onPrivacyChange(true);
+   setTermsAgreed(true);
+   setMarketing(true);
+  }
+  if(orderIncomplete){
+   if(all)setError('필수 주문 정보를 입력한 뒤 결제를 진행해주세요.');
+   return;
+  }
+  if(!all&&(!termsAgreed||payload.privacy!==true))return;
   pending.current=true;
   setBusy(true);
   setError('');
-  if(all){onPrivacyChange(true);setTermsAgreed(true);setMarketing(true)}
   const {deliveryArea,deliveryAddressDetail,...order}=payload;
   const request={
    ...order,...(coupon||{}),title,
@@ -154,7 +165,7 @@ export function Checkout({disabled,title,children,payload,onPrivacyChange}:any){
     expectedDeliveryTotal:total,
    }:{}),
    privacy:all||payload.privacy===true,termsAgreed:all||termsAgreed,
-   marketing:all||marketing,kakaoUpdates:shipping&&kakaoUpdates,
+   marketing:all||marketing,kakaoUpdates:false,
   };
   const body=JSON.stringify(request);
   if(recent.current?.body!==body)recent.current={body,key:crypto.randomUUID()};
@@ -175,9 +186,8 @@ export function Checkout({disabled,title,children,payload,onPrivacyChange}:any){
    <div className="summary-row"><span>최종 결제 금액</span><b>{won(total)}</b></div>
   </div>):<p className="help">매장 픽업 · 배송비 0원</p>}
   <OrderConsents settings={cms.settings} privacy={payload.privacy===true} onPrivacyChange={onPrivacyChange}
-   terms={termsAgreed} onTermsChange={setTermsAgreed} kakaoUpdates={kakaoUpdates}
-   onKakaoChange={shipping?setKakaoUpdates:undefined} marketing={marketing} onMarketingChange={setMarketing}
-   onAcceptAll={()=>void pay(true)} acceptAllDisabled={blocked}/>
+   terms={termsAgreed} onTermsChange={setTermsAgreed} marketing={marketing} onMarketingChange={setMarketing}
+   onAcceptAll={()=>void pay(true)} acceptAllDisabled={processing}/>
   <button type="button" className="cta" disabled={blocked||!termsAgreed||payload.privacy!==true} onClick={()=>void pay()}>
    {busy?'결제 준비 중…':!enabled?'온라인 결제 준비 중':shipping&&total!==null?`${won(total)} 결제하기`:coupon?'쿠폰 2,000원 적용하고 진행':children}
   </button>
