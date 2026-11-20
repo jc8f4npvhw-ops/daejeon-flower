@@ -364,7 +364,13 @@ function FlowerStyleComparison({product, size, selectedStyle, onSelect}:{
         const {florist,description}=flowerStyleSummaries[style];
         const introduction=cms.styles[style]??styleDescriptions[style];
         const selected=style===selectedStyle;
-        return <article key={style} className={`style-card flower-style-option ${selected?'selected':''}`}>
+        return <article key={style} className={`style-card flower-style-option ${selected?'selected':''}`}
+          onClick={event=>{
+            const target=event.target;
+            if(!(target instanceof Element)||!event.currentTarget.contains(target))return;
+            if(target.closest('button, a, details, .style-photo-strip, .photo-slider'))return;
+            onSelect(style);
+          }}>
           <div className="style-profile">
             <div className="avatar"><StoreImage src={previewAssets.profiles[style]} alt={florist.split(' · ')[0]}/></div>
             <div className="flower-style-heading">
