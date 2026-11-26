@@ -4,7 +4,7 @@ type NoticeLinkInputProps = {
   label: string;
   value: string;
   valid: boolean;
-  onChange: (url: string) => void;
+  onChange: (url: string, sharedText?: string) => void;
 };
 
 export function NoticeLinkInput({ label, value, valid, onChange }: NoticeLinkInputProps) {
@@ -36,7 +36,7 @@ export function NoticeLinkInput({ label, value, valid, onChange }: NoticeLinkInp
           }
 
           setPasteError('');
-          onChange(links[0]);
+          onChange(links[0], text.slice(0, 20000));
         }}
       />
       {pasteError

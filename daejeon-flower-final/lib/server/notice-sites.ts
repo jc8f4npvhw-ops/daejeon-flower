@@ -1,4 +1,8 @@
 import {cleanNoticeFields,validNoticeDate} from '../../src/frontend/notice-fields';
+import {parseNoticeText} from '../../src/frontend/notice-text';
+export const FUNEIN_HOSTS=['funein.com','www.funein.com'];
+const funeinPath=/^\/bugo\/funeral\/\d+(?:\/\d+)?\/?$/;
+export function isFuneinNotice(url:URL){return FUNEIN_HOSTS.includes(url.hostname)&&funeinPath.test(url.pathname)}
 export const DIRECT_NOTICE_HOSTS=['samga.co.kr','letterb.barunsoncard.com'];
 const normalize=(s:string)=>s.replace(/\s+/g,' ').trim();
 function decode(s:string){return s.replace(/&#(x[0-9a-f]+|\d+);/gi,(_,n)=>{const v=n[0].toLowerCase()==='x'?parseInt(n.slice(1),16):parseInt(n,10);return v>0&&v<=0x10ffff?String.fromCodePoint(v):''}).replace(/&nbsp;/gi,' ').replace(/&quot;/gi,'"').replace(/&apos;|&#39;/gi,"'").replace(/&amp;/gi,'&').replace(/&lt;/gi,'<').replace(/&gt;/gi,'>')}
@@ -9,8 +13,20 @@ function dateText(s:string){const m=/(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})
 function timeText(s:string){const m=/(오전|오후)?\s*(\d{1,2})\s*시(?:\s*(\d{1,2})\s*분)?/.exec(s);if(!m)return '';let h=Number(m[2]),min=Number(m[3]||0);if(m[1]&&h>=1&&h<=12){h=h%12+(m[1]==='오후'?12:0)}else if(m[1])return '';if(h>23||min>59)return '';return String(h).padStart(2,'0')+':'+String(min).padStart(2,'0')}
 function flightStrings(html:string){const rows:string[]=[];for(const m of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)){const inner=/self\.__next_f\.push\((\[[\s\S]*\])\)/.exec(m[1]);if(!inner)continue;try{const a=JSON.parse(inner[1]);if(a[0]===1&&typeof a[1]==='string')rows.push(a[1])}catch{}}return rows}
 function field(records:string[],key:string){const values=new Set<string>();const pattern=new RegExp('"'+key+'"\\s*:\\s*("(?:\\\\.|[^"\\\\])*")','g');for(const s of records){pattern.lastIndex=0;for(const m of s.matchAll(pattern)){try{const v=JSON.parse(m[1]);if(typeof v==='string'&&v.trim())values.add(v.trim())}catch{}}}return values.size===1?[...values][0]:''}
+function parseFuneinNotice(clean:string,now:Date){
+ const body=clean.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)?.[1]??clean;
+ const visible=decode(body.replace(/<\/(?:div|p|h[1-6]|li|dt|dd|th|td|tr|section|article)\s*>|<br\b[^>]*>/gi,'\n').replace(/<[^>]*>/g,' '));
+ const labeled=visible.replace(/^[ \t]*분향실(?=[ \t:：]|$)/gm,'빈소')
+  .replace(/^[ \t]*고인명(?=[ \t:：]|$)/gm,'고인')
+  .replace(/^[ \t]*상주명(?=[ \t:：]|$)/gm,'상주')
+  .replace(/^[ \t]*장례식장\s*주소(?=[ \t:：]|$)/gm,'주소');
+ const {fields,evidence,warnings}=parseNoticeText(labeled,'funeral',now);
+ if(!fields.hall||!(fields.deceasedName||fields.chiefMourner||fields.room))return null;
+ return {fields,evidence,warnings,needsReview:true,reader:'site',message:'안내장에 표시된 내용을 확인해주세요.'};
+}
 export function parseNoticeSite(rawURL:string,html:string,kind:string,now=new Date()){
  const url=new URL(rawURL),clean=sanitized(html),values:Record<string,string>={},evidence:Record<string,string>={},warnings:string[]=[];
+ if(kind==='funeral'&&isFuneinNotice(url))return parseFuneinNotice(clean,now);
  if(url.hostname==='samga.co.kr'&&/^\/obituary\/indv\/\d+\/?$/.test(url.pathname)&&kind==='funeral'){
   values.hall=text(block(clean,'h2','funeral-hall'));
   const deceased=text((/<strong\b[^>]*>([\s\S]*?)<\/strong>/i.exec(block(clean,'div','deceased'))?.[1]||''));

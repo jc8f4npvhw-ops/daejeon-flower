@@ -4,26 +4,27 @@ import {NoticeImport} from './notice-import';
 import {NoticeLinkInput} from './notice-link-input';
 import {goToStep} from "./step-motion";
 import {WreathCheckout} from "./wreath-checkout";
-import {gallery} from "./cms";
+import {WreathProductOptions} from "./wreath-product-options";
 import {SchedulePicker} from "./schedule-picker";
 import React,{useState} from 'react';
 const labels=['화환 선택','예식장','주문자','리본 문구','최종 확인'];
 export function WeddingFlow({variants,phone,times}:any){
  const [step,setStep]=useState(0),[selected,setSelected]=useState(''),[form,setForm]=useState<Record<string,string>>({message:'祝結婚 (축결혼)'}),[payment,setPayment]=useState(false);
  const [method,setMethod]=useState('manual'),[attachment,setAttachment]=useState<{name:string;src:string}|null>(null),[fileError,setFileError]=useState('');
+ const [sharedText,setSharedText]=useState('');
  const linkValid=/^https?:\/\/[^\s]+$/i.test(form.noticeUrl||'');const evidence=method==='link'?linkValid:method==='capture'?!!attachment:false;
  const variant=variants.find((v:any)=>v.size===selected);const update=(k:string,v:string)=>{setForm(f=>({...f,[k]:v}));setPayment(false);const owner=['name','phone'].includes(k)?2:['sender','message'].includes(k)?3:1;setStep(s=>Math.min(s,owner))};
  const next=(current:number)=>{setStep(current+1);goToStep('wreath-step-'+(current+1))};
  const field=(key:string,label:string,placeholder='',optional=false)=><label className="w-flow-field" key={key}><span>{label} {!optional&&<em>*</em>}</span><PhoneInput telephone={key.toLowerCase().includes('phone')} type={key==='phone'?'tel':key==='departureDate'?'date':key==='departureTime'?'time':'text'} autoComplete={key==='phone'?'tel':key==='name'?'name':'off'} value={form[key]||''} placeholder={placeholder} onChange={e=>update(key,e.target.value)}/></label>;
 
- return <section className="wreath-flow" id="wreath-order" aria-label="축하화환 단계별 주문"><div className="w-flow-heading"><span className="wreath-kicker">마음을 전하는 순서</span><h2>하나씩 알려주세요.</h2><p>상품과 배송 정보를 확인하고 결제로 이어집니다.</p></div><ol className="w-flow-progress" aria-label="진행 단계">{labels.map((label,i)=><li key={label} aria-current={step===i?'step':undefined}><span>{i<step?'✓':i+1}</span><small>{label}</small></li>)}</ol>
- {labels.map((label,i)=>i<=step?<section className="w-flow-panel" id={'wreath-step-'+i} key={label} aria-label={label}>
+ return <section className="wreath-flow" id="wreath-order" data-wreath-kind="wedding" aria-label="축하화환 단계별 주문"><div className="w-flow-heading"><span className="wreath-kicker">마음을 전하는 순서</span><h2>하나씩 알려주세요.</h2><p>상품과 배송 정보를 확인하고 결제로 이어집니다.</p></div><ol className="w-flow-progress" aria-label="진행 단계">{labels.map((label,i)=><li key={label} aria-current={step===i?'step':undefined} data-complete={i<step||undefined}><span>{i<step?'✓':i+1}</span><small>{label}</small></li>)}</ol>
+ {labels.map((label,i)=>i<=step?<section className="w-flow-panel" data-current={step===i||undefined} id={'wreath-step-'+i} key={label} aria-label={label}>
  <span className="wreath-kicker">STEP 0{i+1} / 05</span>
- {i===0&&<><h3>보내실 화환을 선택해주세요.</h3><p className="help">상품 금액입니다. 배송 가능 여부와 배송비는 장소 확인 후 안내합니다.</p><RecentProductPhotos product="축하화환" style="" size={selected||undefined} heading="최근에 전해드린 축하화환"/><div className="funeral-options">{variants.map((v:any,n:number)=><button type="button" key={v.size} aria-pressed={selected===v.size} className={`option-card funeral-option ${selected===v.size?'selected':''}`} onClick={()=>{setSelected(v.size);setPayment(false);next(0)}}>{gallery('축하화환','',v.size)[0]?<img className="wreath-choice-photo" src={gallery('축하화환','',v.size)[0].src} alt={`${v.size} 상품 사진`} loading="lazy"/>:<div className="wreath-choice-empty">제작사진 준비 중</div>}{n===0&&<span className="funeral-best">BEST</span>}<b>{v.size}</b><div className="price">{v.price.toLocaleString('ko-KR')}원</div><small>{selected===v.size?'선택됨 ✓':'선택하기'}</small></button>)}</div></>}
+ {i===0&&<><h3>보내실 화환을 선택해주세요.</h3><p className="help">상품 금액입니다. 배송 가능 여부와 배송비는 장소 확인 후 안내합니다.</p><RecentProductPhotos product="축하화환" style="" size={selected||undefined} heading="최근에 전해드린 축하화환"/><WreathProductOptions product="축하화환" variants={variants} selected={selected} onSelect={size=>{setSelected(size);setPayment(false);next(0)}}/></>}
  {i===1&&<><h3>어느 예식장으로 전할까요?</h3><p className="help">청첩장에 적힌 장소와 예식홀을 확인해주세요.</p><div className="notice-methods" role="group" aria-label="청첩장 정보 입력 방법">{[['link','청첩장 링크 붙여넣기'],['capture','청첩장 캡처 첨부'],['manual','직접 입력']].map(([id,label])=><button type="button" className={`option-card ${method===id?'selected':''}`} aria-pressed={method===id} key={id} onClick={()=>{setMethod(id);setPayment(false);setStep(s=>Math.min(s,1))}}>{label}</button>)}</div>
- {method==='link'&&<NoticeLinkInput label="청첩장 링크" value={form.noticeUrl||''} valid={linkValid} onChange={url=>update('noticeUrl',url)}/>}
+ {method==='link'&&<NoticeLinkInput label="청첩장 링크" value={form.noticeUrl||''} valid={linkValid} onChange={(url,text)=>{setSharedText(text||'');update('noticeUrl',url)}}/>}
  {method==='capture'&&<div className="notice-capture"><label className="capture-upload">사진 선택하기<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>{const file=e.target.files?.[0];if(!file)return;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024){setFileError('JPG·PNG·WEBP 이미지 8MB 이하로 선택해주세요.');e.target.value='';return}setFileError('');const reader=new FileReader();reader.onload=()=>{setAttachment({name:file.name,src:String(reader.result)});setPayment(false);setStep(s=>Math.min(s,1))};reader.readAsDataURL(file)}}/></label>{fileError&&<p role="alert">{fileError}</p>}{attachment&&<><img src={attachment.src} alt="첨부한 청첩장 캡처 미리보기"/><p>{attachment.name}</p><button type="button" className="text-link" onClick={()=>{setAttachment(null);setPayment(false);setStep(s=>Math.min(s,1))}}>사진 삭제</button></>}<p className="help">캡처는 자동 읽기에 사용되고, 주문 시 비공개로 첨부됩니다.</p></div>}
- <NoticeImport kind="wedding" method={method} url={form.noticeUrl} attachment={attachment} current={form} onApply={(values:any)=>{setForm(f=>({...f,...values}));setPayment(false);setStep(s=>Math.min(s,1))}}/>
+ <NoticeImport kind="wedding" method={method} url={form.noticeUrl} sharedText={sharedText} onUseCapture={()=>{setMethod('capture');setPayment(false);setStep(s=>Math.min(s,1))}} attachment={attachment} current={form} onApply={(values:any)=>{setForm(f=>({...f,...values}));setPayment(false);setStep(s=>Math.min(s,1))}}/>
  {field('hall','예식장 이름','예: ○○예식장')}{field('address','예식장 주소')}{field('room','예식홀','예: 3층 그랜드홀')}{field('person','신랑 / 신부 성함')}
  <fieldset className="w-ribbon-choice">
    <legend>어느 쪽에 보내시나요? <span aria-hidden="true">*</span></legend>

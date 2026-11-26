@@ -1,9 +1,49 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
-export function AdminPanelDialog({title,onClose,children,className='',initialFocus='button'}:any){
- const ref=useRef<HTMLDivElement>(null),close=useRef(onClose);close.current=onClose;
- useEffect(()=>{const prior=document.activeElement as HTMLElement,overflow=document.body.style.overflow;document.body.style.overflow='hidden';ref.current?.querySelector<HTMLElement>(initialFocus)?.focus();const key=(e:KeyboardEvent)=>{if(document.querySelector('.ac-backdrop'))return;if(e.key==='Escape'){e.preventDefault();close.current()}if(e.key==='Tab'){const all=ref.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled),a[href]');if(!all?.length)return;const first=all[0],last=all[all.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}};document.addEventListener('keydown',key);return()=>{document.body.style.overflow=overflow;document.removeEventListener('keydown',key);prior?.isConnected&&prior.focus()}},[]);
- return createPortal(<div className="ap-backdrop"><div ref={ref} className={'ap-dialog '+className} role="dialog" aria-modal="true" aria-label={title}><header><h2>{title}</h2><button onClick={onClose}>닫기 ×</button></header><div className="ap-body">{children}</div></div></div>,document.body)
+export function AdminPanelDialog({title,onClose,children,className='',initialFocus='button',footer,fitVisualViewport=false}:any){
+ const ref=useRef<HTMLDivElement>(null),backdrop=useRef<HTMLDivElement>(null),close=useRef(onClose);close.current=onClose;
+ useEffect(()=>{
+  const prior=document.activeElement as HTMLElement,overflow=document.body.style.overflow;
+  document.body.style.overflow='hidden';
+  ref.current?.querySelector<HTMLElement>(initialFocus)?.focus({preventScroll:fitVisualViewport});
+  const viewport=fitVisualViewport?window.visualViewport:null;
+  const resize=()=>{
+   if(!viewport)return;
+   backdrop.current?.style.setProperty('--notice-viewport-height',viewport.height+'px');
+   backdrop.current?.style.setProperty('--notice-viewport-top',viewport.offsetTop+'px');
+  };
+  resize();
+  viewport?.addEventListener('resize',resize);
+  viewport?.addEventListener('scroll',resize);
+  const key=(e:KeyboardEvent)=>{
+   if(document.querySelector('.ac-backdrop'))return;
+   if(e.key==='Escape'){e.preventDefault();close.current()}
+   if(e.key==='Tab'){
+    const all=ref.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled),a[href],summary');
+    if(!all?.length)return;
+    const first=all[0],last=all[all.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+   }
+  };
+  document.addEventListener('keydown',key);
+  return()=>{
+   document.body.style.overflow=overflow;
+   document.removeEventListener('keydown',key);
+   viewport?.removeEventListener('resize',resize);
+   viewport?.removeEventListener('scroll',resize);
+   if(prior?.isConnected&&(!fitVisualViewport||!prior.matches('input,textarea,[contenteditable="true"]')))prior.focus();
+  };
+ },[fitVisualViewport,initialFocus]);
+ return createPortal(
+  <div ref={backdrop} className={'ap-backdrop'+(fitVisualViewport?' notice-review-backdrop':'')}>
+   <div ref={ref} className={'ap-dialog '+className} role="dialog" aria-modal="true" aria-label={title}>
+    <header><h2>{title}</h2><button type="button" aria-label={fitVisualViewport?'닫기':undefined} onClick={onClose}>{fitVisualViewport?'×':'닫기 ×'}</button></header>
+    <div className="ap-body">{children}</div>
+    {footer&&<footer className="ap-footer">{footer}</footer>}
+   </div>
+  </div>,document.body)
+
 }
 export function useAdminConfirm(){
  const [request,setRequest]=useState<any>(null);const resolver=useRef<((v:boolean)=>void)|null>(null),box=useRef<HTMLDivElement>(null);
